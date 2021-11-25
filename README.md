@@ -1,4 +1,4 @@
-# SHinvt-TXN-Hx-visualizer
+# SHinvest_visualizer
 
 
 ---
@@ -19,18 +19,19 @@
 
 - 외화RP의 경우 이자 추적이 불가능해서 정확하게 계산하려면 직접 입력해야됨
 - 외화잔고는 csv 정보부족으로 인해 소수점이하 절사됨
-- 시작날짜는 원금보정을 위해 존재하며, 다른 함수들은 처음부터 종료날짜 이전까지 모두 탐색함
+- 기간 선택 불가
 
 ---
 
 ## Change Log
 
-- [CHANGELOG.MD](https://github.com/syki66/SHinvt-TXN-Hx-visualizer/blob/master/CHANGELOG.MD)
+- [CHANGELOG.MD](https://github.com/syki66/SHinvest_visualizer/blob/master/CHANGELOG.MD)
 
 ---
 
 ## Todo List
 
+- 공모주 on/off 추가
 
 ---
 

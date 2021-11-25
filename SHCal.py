@@ -2,9 +2,10 @@ import csv
 from datetime import datetime
 
 class SHCal:
-    def __init__(self, csv, start, end):
+    def __init__(self, csv, cor, prin):
         raw_list = self.readCSV(csv)
-        self.full_list, self.crop_list = self.preprocessData(raw_list, start, end)
+        self.full_list, self.crop_list = self.preprocessData(raw_list, cor)
+        self.prin = prin
 
     def readCSV(self, file):
         '''CSV 읽기'''
@@ -16,7 +17,7 @@ class SHCal:
         f.close()
         return array
 
-    def preprocessData(self, list, start_date, end_date):
+    def preprocessData(self, list, cor_date):
         '''데이터 전처리'''
         array = []
         for i in range(0, len(list), 2):
@@ -37,13 +38,10 @@ class SHCal:
         if datetime(*array[0][0]) > datetime(*array[-1][0]):
             array.reverse()
         start = 0
-        end = len(array)
         for i in range(len(array)):
-            if datetime(*start_date) > datetime(*array[i][0]):
+            if datetime(*cor_date) > datetime(*array[i][0]):
                 start = i + 1
-            if datetime(*end_date) >= datetime(*array[i][0]):
-                end = i
-        return array[:end], array[start : end]
+        return array, array[start:]
 
     def deposit(self):
         '''입금고액'''
@@ -65,9 +63,9 @@ class SHCal:
                     withdraw += line[4]
         return withdraw
 
-    def principal(self, prin, correction):
+    def principal(self):
         '''투자원금'''
-        principal_result = (self.deposit() - self.withdraw()) + (prin + correction)
+        principal_result = (self.deposit() - self.withdraw()) + self.prin
         return principal_result
 
     def USD(self):

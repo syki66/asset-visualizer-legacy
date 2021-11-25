@@ -1,16 +1,15 @@
 # 배당금 , 배당율, 수익률, 환율, 그래프 추이 한번 그려주고, etf 보유종목 현황이나 비율 정도.
-# 공모주 여부 선택, 보유주식 잔고, 평가잔고, 평단, 보유종목 top10 계좌 여러개 보여주고 수익률 등 합산 가능하게, 거래내역 두개 비교해서 전산누락도 확인, 평단과 주식수 체크
+# 보유주식 잔고, 평가잔고, 평단, 보유종목 top10 계좌 여러개 보여주고 수익률 등 합산 가능하게, 거래내역 두개 비교해서 전산누락도 확인, 평단과 주식수 체크
 # 예금과 수익률 비교, 기간, 파일이름을 계좌명으로 출력
 # 가장 최근 수수료율 확인시키기
 
 from SHCal import SHCal
 
-
-cal = SHCal('1111.csv', (2021, 1, 15), (2021, 11, 18))
+cal = SHCal('1111.csv', (2021, 1, 15), 0)
 
 print(cal.deposit())
 print(cal.withdraw())
-print(cal.principal(0, 0))
+print(cal.principal())
 print(cal.USD())
 print(cal.KRW())
 print(cal.USD_RP())
