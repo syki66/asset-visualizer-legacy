@@ -5,18 +5,20 @@
 
 from SHCal import SHCal
 
-cal = SHCal('1111.csv', (2021, 1, 15), 0)
+cal = SHCal('1111.csv', (2021, 11, 27))
 
 print(cal.deposit())
-print(cal.withdraw())
-print(cal.principal())
-print(cal.USD())
-print(cal.KRW())
-print(cal.USD_RP())
-print(cal.dividend_KR())
-print(cal.dividend_US())
-print(cal.stock_KR())
-print(cal.stock_US())
+# print(cal.withdraw())
+# print(cal.principal())
+# print(cal.USD())
+# print(cal.KRW())
+# print(cal.USD_RP())
+# print(cal.dividend_KR())
+# print(cal.dividend_US())
+# print(cal.stock_KR())
+# print(cal.stock_US())
+
+# https://quotation-api-cdn.dunamu.com/v1/forex/recent?codes=FRX.KRWUSD
 
 
 # 외화 RP값은 있다면 수동입력받기
