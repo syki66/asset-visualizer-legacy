@@ -5,11 +5,11 @@
 
 from SHCal import SHCal
 
-cal = SHCal('1111.csv', (2021, 11, 27))
+cal = SHCal('1111.csv', (2021, 11, 27), -7954)
 
 print(cal.deposit())
-# print(cal.withdraw())
-# print(cal.principal())
+print(cal.withdraw())
+print(cal.principal())
 # print(cal.USD())
 # print(cal.KRW())
 # print(cal.USD_RP())

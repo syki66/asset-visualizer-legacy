@@ -1,10 +1,11 @@
 import csv
 from datetime import datetime
+import copy
 
 class SHCal:
-    def __init__(self, csv, end_date):
+    def __init__(self, csv, end_date, correction=0.0):
         raw_list = self.readCSV(csv)
-        self.crop_list = self.preprocessData(raw_list, end_date)
+        self.crop_list = self.preprocessData(raw_list, end_date, float(correction))
 
     def readCSV(self, file):
         '''CSV 읽기'''
@@ -16,16 +17,19 @@ class SHCal:
         f.close()
         return array
 
-    def preprocessData(self, list, end_date):
+    def preprocessData(self, list, end_date, correction):
         '''데이터 전처리'''
         array = []
         for i in range(0, len(list), 2):
             array.append(list[i] + list[i + 1])
+
         array.pop(0)
+
         for i in range(len(array)):
             for j in range(len(array[i])):
                 if array[i][j] == '':
                     array[i][j] = '0'
+
         for i in range(len(array)):
             array[i][0] = tuple(map(int, array[i][0].split('.')))
             array[i][4] = float(array[i][4].replace(',', ''))
@@ -34,12 +38,25 @@ class SHCal:
             array[i][20] = float(array[i][20].replace(',', ''))
             array[i][16] = float(array[i][16].replace(',', ''))
             array[i][3] = int(float(array[i][3].replace(',', '')))
+
         if datetime(*array[0][0]) > datetime(*array[-1][0]):
             array.reverse()
+        
+        new_line = []
+        for line in array:
+            if line[1] == '은행이체입금':
+                new_line = copy.deepcopy(line)
+                break
+        new_line[0] = array[0][0]
+        new_line[4] = correction
+        new_line[23] = correction
+        array.insert(0, new_line)
+
         end = len(array)
         for i in range(len(array)):
             if datetime(*end_date) >= datetime(*array[i][0]):
                 end = i
+                
         return array[:end]
 
     def deposit(self):
@@ -58,7 +75,7 @@ class SHCal:
                 deposit += line[16] * line[3] * exchange_rate
             if line[1] == '은행이체외화입금':
                 deposit += line[10] * exchange_rate
-        return round(deposit)
+        return int(deposit)
     
     def withdraw(self):
         '''출금고액'''
@@ -68,7 +85,7 @@ class SHCal:
             for kw in keyword:
                 if line[1].endswith(kw):
                     withdraw += line[4]
-        return withdraw
+        return int(withdraw)
 
     def principal(self):
         '''투자원금'''
