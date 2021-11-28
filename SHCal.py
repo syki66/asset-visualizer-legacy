@@ -6,6 +6,8 @@ class SHCal:
     def __init__(self, csv, end_date, correction=0.0):
         raw_list = self.readCSV(csv)
         self.crop_list = self.preprocessData(raw_list, end_date, float(correction))
+        if self.crop_list == None:
+            raise ValueError
 
     def readCSV(self, file):
         '''CSV 읽기'''
@@ -52,12 +54,14 @@ class SHCal:
         new_line[23] = correction
         array.insert(0, new_line)
 
-        end = len(array)
-        for i in range(len(array)):
-            if datetime(*end_date) >= datetime(*array[i][0]):
-                end = i
-                
-        return array[:end]
+        if datetime(*end_date) < datetime(*array[0][0]):
+            return None
+        else:
+            end = len(array)
+            for i in range(len(array)):
+                if datetime(*end_date) >= datetime(*array[i][0]):
+                    end = i
+            return array[:end]
 
     def deposit(self):
         '''입금고액'''
@@ -97,12 +101,14 @@ class SHCal:
         for line in list(reversed(self.crop_list)):
             if line[2] == 'USD' or line[22] == 'USD':
                 return line[23]
+        return 0
 
     def KRW(self):
         '''원화 예수금'''
         for line in list(reversed(self.crop_list)):
             if line[2] != 'USD' and line[22] != 'USD':
                 return line[23]
+        return 0
 
     def USD_RP(self):
         '''달러 RP 잔고 (이자 추적 불가)'''
@@ -124,7 +130,7 @@ class SHCal:
                 div += line[10]
             if line[1] == '외국납부세액':
                 tax += line[10]
-        return div, tax
+        return round(div, 2), round(tax, 2)
 
     def dividend_KR(self):
         '''국내주식 배당금'''
@@ -134,7 +140,7 @@ class SHCal:
             if line[1] == '배당금':
                 div += line[4]
                 tax += line[20]
-        return div, tax
+        return round(div, 2), round(tax, 2)
 
     def stock_US(self):
         '''미국주식 잔고'''
