@@ -3,130 +3,94 @@
 # 예금과 수익률 비교, 기간, 파일이름을 계좌명으로 출력
 # 가장 최근 수수료율 확인시키기
 
-
-
-
 from SHCal import SHCal
 from ConversionTools import ConversionTools
-
 
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import calendar
 
+def accountInfo(csv, corr_val=0.0):
+    array = []
+    i = 0
+    while True:
+        try:
+            dict = {}
+            usd_balance = 0
+            krw_balance = 0
 
+            date = datetime.now() - relativedelta(months=i)
+            year, month = map(int, date.strftime('%Y %m').split())
+            last_day = calendar.monthrange(year, month)[1]
 
+            shcal = SHCal(csv, (year, month, last_day), corr_val)
 
+            start_date, end_date = shcal.dateRange()
+            tools = ConversionTools(start_date, end_date)
 
-# cal = SHCal('1111.csv', (2021, 11, 27), -7954)
-# s, e= cal.dateRange()
-# print(s)
-# print(e)
-
-
-
-
-
-# now_year, now_month, now_day = map(int, datetime.now().strftime('%Y %m %d').split())
-# start_year, start_month, start_day = ('1990', '01', '01')
-# 거래내역 받아서 필요한만큼부터  시작하고, 너무 느리면 캐시 함수 사용하기
-
-
-
-
-
-
-# corr_val = -7954
-corr_val = 0
-
-array = []
-i = 0
-end = False
-while not end:
-    try:
-        usd_balance = 0
-        krw_balance = 0
-
-
-        date = datetime.now() - relativedelta(months=i)
-        year, month = map(int, date.strftime('%Y %m').split())
-        last_day = calendar.monthrange(year, month)[1]
-
-
-        shcal = SHCal('1111.csv', (year, month, last_day), corr_val)
-
-        start_date, end_date = shcal.dateRange()
-        print(shcal.dateRange())
-        tools = ConversionTools(start_date, end_date)
-
-
-        temp = []
-
-        
-        
-        temp.append((year, month, last_day))
-        # temp.append(shcal.deposit())
-        # temp.append(shcal.withdraw())
-        temp.append(shcal.principal())
-
-        temp.append(shcal.USD())
-        usd_balance += shcal.USD()
-        temp.append(shcal.KRW())
-        krw_balance += shcal.KRW()
-
-        temp.append(shcal.USD_RP())
-        # temp.append(shcal.dividend_KR())
-        # temp.append(shcal.dividend_US())
-        
-
-
-        
-        print('\n')
-        print(year, month, last_day)
-        profit = 0
+            print(f'계산중 : {csv}계좌 -> {end_date[0]}년 {end_date[1]}월\n')
             
-
+            usd_balance += shcal.USD()
+            usd_balance += shcal.USD_RP()
+            krw_balance += shcal.KRW()
         
-        for key in shcal.stock_KR().keys():
-            KR_curr_price = tools.krCodeToPrice(key[1:]) # 여기에 시장값 가져오는 함수 사용하기
-            # print(KR_curr_price, key)
-            kr_stocks = shcal.stock_KR()[key]
-            stock_avg = len(kr_stocks) * (KR_curr_price - (sum(kr_stocks) / len(kr_stocks)))
-            # print(krCodeToName(key[1:]), len(kr_stocks), KR_curr_price, stock_avg)
+            kr_stock_info = []
+            us_stock_info = []
+            for key in shcal.stock_KR().keys():
+                price = tools.krCodeToPrice(key[1:])
+                stocks = shcal.stock_KR()[key]
+                name = tools.krCodeToName(key[1:])
+                quantity = len(stocks)
+                avg = round(sum(stocks) / quantity)
+                profit = round((price * quantity) - sum(stocks))
+                rate = round(profit / sum(stocks) * 100, 2)
+                
+                kr_stock_info.append([name, quantity, avg, price, profit, rate])
+                
+                krw_balance += quantity * price
+
+            for key in shcal.stock_US().keys():
+                ticker = tools.usCodeToTicker(key)
+                price = round(tools.usTickerToPrice(ticker), 2)
+                stocks = shcal.stock_US()[key]
+                quantity = len(stocks)
+                avg = round(sum(stocks) / quantity, 2)
+                profit = round((price * quantity) - sum(stocks), 2)
+                rate = round(profit / sum(stocks) * 100, 2)
+                
+                us_stock_info.append([ticker, quantity, avg, price, profit, rate])
+
+                usd_balance += quantity * price
             
-            krw_balance += len(kr_stocks) * KR_curr_price
+            total_balance = usd_balance * tools.USDToKRW() + krw_balance         
+            
+            dict['날짜'] = f'{end_date[0]}년 {end_date[1]}월 {end_date[2]}일'
+            dict['투자원금'] = shcal.principal()
+            dict['수익금'] = int(total_balance) - shcal.principal()
+            dict['수익률'] = round((int(total_balance) - shcal.principal()) / shcal.principal() * 100, 2)
+            dict['평가잔고'] = int(total_balance)
+            dict['한국주식잔고'] = kr_stock_info
+            dict['미국주식잔고'] = us_stock_info
 
-        
-        for key in shcal.stock_US().keys():
-            ticker = tools.usCodeToTicker(key)
-            curr_price = tools.usTickerToPrice(ticker) # 여기에 시장값 가져오는 함수 사용하기
+            # dict['한국배당금'] = shcal.dividend_KR()
+            # dict['미국배당금'] = shcal.dividend_US()
+            # dict['입금고액'] = shcal.deposit()
+            # dict['출금고액'] = shcal.withdraw()
+            # dict['원화예수금'] = shcal.KRW()
+            # dict['달러예수금'] = shcal.USD()
+            # dict['달러RP'] = shcal.USD_RP()
 
-            us_stocks = shcal.stock_US()[key]
-            stock_avg = len(us_stocks) * (curr_price - (sum(us_stocks) / len(us_stocks)))
-            # print(usCodeToTicker(key), len(us_stocks), curr_price, stock_avg)
+            array.append(dict)
+            i += 1
+            
+        except ValueError:
+            return array
 
-            usd_balance += len(us_stocks) * curr_price
-        
-        usd_balance += shcal.USD_RP()
-        print(krw_balance)
-        print(usd_balance)
-        total_balance = usd_balance * tools.USDToKRW() + krw_balance
-        print(f'원금 : {shcal.principal():,} 원')
-        print(f'평가잔고 : {int(total_balance):,} 원')
-        print(f'수익금 : {int(total_balance) - shcal.principal():,} 원')
-        print(f'수익률 : {round((int(total_balance) - shcal.principal()) / shcal.principal() * 100, 2):,} %')
-        
+for line in accountInfo('1111.csv', -7954):
+    for key in line.keys():
+        print(line[key])
+    print('')
 
-
-        # temp.append(shcal.stock_KR())
-        # temp.append(shcal.stock_US())
-        
-        # temp.append(평가잔고)
-        
-        i += 1
-        array.append(temp)
-    except ValueError:
-        end = True
 
 
 # 종목, 수량, 매입금액, 평가금액, 평가손익, 평가수익률 계산하기
@@ -135,23 +99,6 @@ while not end:
 # 평가잔고에 전환입금 전환출금도 계산해야됨
 
 
-
-# cal = SHCal('1111.csv', (2021, 11, 27), -7954)
-
-# # cal2 = SHCal('1111.csv', (2021, 7, 27), -7954)
-# print("\n\n\n")
-# print(cal.deposit())
-# print(cal.withdraw())
-# print(cal.principal())
-# print(cal.USD())
-# print(cal.KRW())
-# # print(cal.USD_RP())
-# print(cal.dividend_KR())
-# print(cal.dividend_US())
-# print(cal.stock_KR())
-# print(cal.stock_US())
-
-# # print(cal.stock_KR().keys())
 
 
 
