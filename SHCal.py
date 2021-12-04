@@ -61,7 +61,7 @@ class SHCal:
             for i in range(len(array)):
                 if datetime(*end_date) >= datetime(*array[i][0]):
                     end = i
-            return array[:end]
+            return array[:end + 1]
 
     def deposit(self):
         '''입금고액'''

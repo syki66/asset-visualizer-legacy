@@ -23,7 +23,7 @@ class ConversionTools:
 
     def usTickerToPrice(self, ticker):
         start_ts = int(time.mktime(datetime.strptime(f'{self.start_year}{self.start_month}{self.start_day}', "%Y%m%d").timetuple()))
-        end_ts = int(time.mktime(datetime.strptime(f'{self.end_year}{self.end_month}{self.end_day}', "%Y%m%d").timetuple()))
+        end_ts = int(time.mktime(datetime.strptime(f'{self.end_year}{self.end_month}{self.end_day}', "%Y%m%d").timetuple())) + 86400
 
         url = f'https://query1.finance.yahoo.com/v7/finance/download/{ticker}?period1={start_ts}&period2={end_ts}&interval=1d&events=history&includeAdjustedClose=true'
         headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}

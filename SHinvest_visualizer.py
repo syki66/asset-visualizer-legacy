@@ -25,7 +25,9 @@ def accountInfo(csv, corr_val=0.0):
 
             shcal = SHCal(csv, (year, month, last_day), corr_val)
 
-            start_date, end_date = shcal.dateRange()
+            start_date = shcal.dateRange()[0]
+            end_date = (year, month, last_day)
+
             tools = ConversionTools(start_date, end_date)
 
             print(f'계산중 : {csv}계좌 -> {end_date[0]}년 {end_date[1]}월\n')
@@ -66,9 +68,9 @@ def accountInfo(csv, corr_val=0.0):
             
             dict['날짜'] = f'{end_date[0]}년 {end_date[1]}월 {end_date[2]}일'
             dict['투자원금'] = shcal.principal()
+            dict['평가잔고'] = int(total_balance)
             dict['수익금'] = int(total_balance) - shcal.principal()
             dict['수익률'] = round((int(total_balance) - shcal.principal()) / shcal.principal() * 100, 2)
-            dict['평가잔고'] = int(total_balance)
             dict['한국주식잔고'] = kr_stock_info
             dict['미국주식잔고'] = us_stock_info
 
@@ -76,9 +78,9 @@ def accountInfo(csv, corr_val=0.0):
             # dict['미국배당금'] = shcal.dividend_US()
             # dict['입금고액'] = shcal.deposit()
             # dict['출금고액'] = shcal.withdraw()
-            # dict['원화예수금'] = shcal.KRW()
-            # dict['달러예수금'] = shcal.USD()
-            # dict['달러RP'] = shcal.USD_RP()
+            dict['원화예수금'] = round(shcal.KRW())
+            dict['달러예수금'] = shcal.USD()
+            dict['달러RP'] = shcal.USD_RP()
 
             array.append(dict)
             i += 1
