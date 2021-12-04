@@ -6,94 +6,34 @@
 
 
 
-from os import replace
 from SHCal import SHCal
-
+from ConversionTools import ConversionTools
 
 
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import calendar
-import json
-import requests
-import collections
-import time
-from bs4 import BeautifulSoup
 
-now_year, now_month, now_day = map(int, datetime.now().strftime('%Y %m %d').split())
-start_year, start_month, start_day = ('1990', '01', '01')
+
+
+
+
+# cal = SHCal('1111.csv', (2021, 11, 27), -7954)
+# s, e= cal.dateRange()
+# print(s)
+# print(e)
+
+
+
+
+
+# now_year, now_month, now_day = map(int, datetime.now().strftime('%Y %m %d').split())
+# start_year, start_month, start_day = ('1990', '01', '01')
 # 거래내역 받아서 필요한만큼부터  시작하고, 너무 느리면 캐시 함수 사용하기
 
-def krCodeToPrice(code, year, month, day):
-    url = f"https://api.finance.naver.com/siseJson.naver?symbol={code}&requestType=1&startTime={start_year}{start_month}{start_day}&endTime={str(year).zfill(2)}{str(month).zfill(2)}{str(day).zfill(2)}&timeframe=day"
-    res = requests.get(url)
-    raw = res.text
-    for i in reversed(raw.split('\n')):
-        if i.startswith('["20'):
-            year_get = int(i.split(',')[0].split('\"')[1][:4])
-            month_get = int(i.split(',')[0].split('\"')[1][4:6])
-            day_get = int(i.split(',')[0].split('\"')[1][6:8])
-            if datetime(year, month, day) >= datetime(year_get, month_get, day_get):
-                return int(i.split(',')[4])
-
-def krCodeToName(code):
-    url = f'https://polling.finance.naver.com/api/realtime?query=SERVICE_ITEM:{code}'
-    res = requests.get(url)
-    raw = res.text
-    return json.loads(raw)['result']['areas'][0]['datas'][0]['nm']
-
-def usCodeToTicker(code):
-    url = f'https://query2.finance.yahoo.com/v1/finance/search?q={code}'
-    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
-    res = requests.get(url, headers=headers)
-    raw = res.text
-    return json.loads(raw)['quotes'][0]['symbol']
-
-def usTickerToPrice(ticker, year, month, day):
-    start_date = f'{start_year}-{start_month}-{start_day}'
-    start_ts = int(time.mktime(datetime.strptime(start_date, "%Y-%m-%d").timetuple()))
-    date = f'{year}-{month}-{day}'
-    end_ts = int(time.mktime(datetime.strptime(date, "%Y-%m-%d").timetuple()))
-
-    url = f'https://query1.finance.yahoo.com/v7/finance/download/{ticker}?period1={start_ts}&period2={end_ts}&interval=1d&events=history&includeAdjustedClose=true'
-    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36'}
-    res = requests.get(url, headers=headers)
-    raw = res.text
-
-    array = []
-    for line in raw.split('\n'):
-        array.append(line.split(','))
-    array.pop(0)
-    
-    for line in reversed(array):
-        year_get = int(line[0].split('-')[0])
-        month_get = int(line[0].split('-')[1])
-        day_get = int(line[0].split('-')[2])
-        if datetime(year, month, day) >= datetime(year_get, month_get, day_get):
-            return float(line[4])
 
 
-def USDToKRW(year, month, day):
-    index = 1
-    while True:
-        url = f'https://finance.naver.com/marketindex/exchangeDailyQuote.naver?marketindexCd=FX_USDKRW_SHB&page={index}'
-        res = requests.get(url)
-        soup = BeautifulSoup(res.text, 'html.parser')
-        date = soup.select('body > div > table > tbody > tr > td.date')
-        rate = soup.select('body > div > table > tbody > tr> td:nth-child(2)')
-    
-        for i in range(len(date)):
-            year_get = int(date[i].text.split('.')[0])
-            month_get = int(date[i].text.split('.')[1])
-            day_get = int(date[i].text.split('.')[2])
-            if datetime(year, month, day) >= datetime(year_get, month_get, day_get):
-                return float(rate[i].text.replace(',', ''))
 
-        
-
-        index += 1
-        # print(date[i].text, rate[i].text)
-# print(USDToKRW(2021, 9, 28))
 
 
 # corr_val = -7954
@@ -108,13 +48,22 @@ while not end:
         krw_balance = 0
 
 
-        temp = []
         date = datetime.now() - relativedelta(months=i)
         year, month = map(int, date.strftime('%Y %m').split())
         last_day = calendar.monthrange(year, month)[1]
-        # print(year, month, last_day)
+
+
+        shcal = SHCal('1111.csv', (year, month, last_day), corr_val)
+
+        start_date, end_date = shcal.dateRange()
+        print(shcal.dateRange())
+        tools = ConversionTools(start_date, end_date)
+
+
+        temp = []
+
         
-        shcal = SHCal('2222.csv', (year, month, last_day), corr_val)
+        
         temp.append((year, month, last_day))
         # temp.append(shcal.deposit())
         # temp.append(shcal.withdraw())
@@ -139,8 +88,8 @@ while not end:
 
         
         for key in shcal.stock_KR().keys():
-            KR_curr_price = krCodeToPrice(key[1:], year, month, last_day) # 여기에 시장값 가져오는 함수 사용하기
-
+            KR_curr_price = tools.krCodeToPrice(key[1:]) # 여기에 시장값 가져오는 함수 사용하기
+            # print(KR_curr_price, key)
             kr_stocks = shcal.stock_KR()[key]
             stock_avg = len(kr_stocks) * (KR_curr_price - (sum(kr_stocks) / len(kr_stocks)))
             # print(krCodeToName(key[1:]), len(kr_stocks), KR_curr_price, stock_avg)
@@ -149,8 +98,8 @@ while not end:
 
         
         for key in shcal.stock_US().keys():
-            ticker = usCodeToTicker(key)
-            curr_price = usTickerToPrice(ticker, year, month, last_day) # 여기에 시장값 가져오는 함수 사용하기
+            ticker = tools.usCodeToTicker(key)
+            curr_price = tools.usTickerToPrice(ticker) # 여기에 시장값 가져오는 함수 사용하기
 
             us_stocks = shcal.stock_US()[key]
             stock_avg = len(us_stocks) * (curr_price - (sum(us_stocks) / len(us_stocks)))
@@ -161,7 +110,7 @@ while not end:
         usd_balance += shcal.USD_RP()
         print(krw_balance)
         print(usd_balance)
-        total_balance = usd_balance * USDToKRW(year, month, last_day) + krw_balance
+        total_balance = usd_balance * tools.USDToKRW() + krw_balance
         print(f'원금 : {shcal.principal():,} 원')
         print(f'평가잔고 : {int(total_balance):,} 원')
         print(f'수익금 : {int(total_balance) - shcal.principal():,} 원')
@@ -181,7 +130,7 @@ while not end:
 
 
 # 종목, 수량, 매입금액, 평가금액, 평가손익, 평가수익률 계산하기
-# HTS에서 월간거래내역 비교로 에러 찾기
+# HTS에서 일자별 잔고 비교로 에러 찾기
 
 # 평가잔고에 전환입금 전환출금도 계산해야됨
 

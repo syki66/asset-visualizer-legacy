@@ -83,7 +83,7 @@ class SHCal:
     
     def withdraw(self):
         '''출금고액'''
-        keyword = ['은행이체출금', '(펌뱅킹)출금', '체크카드승인']
+        keyword = ['은행이체출금', '(펌뱅킹)출금', '체크카드승인', '체크카드대체출금']
         withdraw = 0
         for line in self.crop_list:
             for kw in keyword:
@@ -181,3 +181,9 @@ class SHCal:
         for t in trash:
             del dict[t]
         return dict
+
+    def dateRange(self):
+        '''시작날짜, 종료날짜'''
+        start_date = (str(self.crop_list[0][0][0]), str(self.crop_list[0][0][1]).zfill(2), str(self.crop_list[0][0][2]).zfill(2))
+        end_date = (str(self.crop_list[-1][0][0]), str(self.crop_list[-1][0][1]).zfill(2), str(self.crop_list[-1][0][2]).zfill(2))
+        return start_date, end_date
