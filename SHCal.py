@@ -65,7 +65,7 @@ class SHCal:
 
     def deposit(self):
         '''입금고액'''
-        keyword = ['은행이체입금', '(펌뱅킹)입금']
+        keyword = ['은행이체입금', '(펌뱅킹)입금', '계좌대체입금']
         deposit = 0
         exchange_rate = 1150
         for line in self.crop_list:
@@ -119,7 +119,10 @@ class SHCal:
                 withdraw += line[10]
             if line[1] == '외화RP매수출금':
                 deposit += line[10]
-        return round(deposit - withdraw, 2)
+        if deposit - withdraw <= 0:
+            return 0
+        else:
+            return round(deposit - withdraw, 2)
 
     def dividend_US(self):
         '''미국주식 배당금'''
@@ -181,6 +184,20 @@ class SHCal:
         for t in trash:
             del dict[t]
         return dict
+
+    def gold(self):
+        '''금현물 잔고 (수익률 추적 불가)'''
+        deposit = 0
+        withdraw = 0
+        for line in self.crop_list:
+            if line[1] == '전환입금':
+                withdraw += line[10]
+            if line[1] == '전환출금':
+                deposit += line[10]
+        if deposit - withdraw <= 0:
+            return 0
+        else:
+            return deposit - withdraw
 
     def dateRange(self):
         '''시작날짜, 종료날짜'''
