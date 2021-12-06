@@ -1,11 +1,12 @@
-
-
 from SHinvest_visualizer import accountInfo
 
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 from matplotlib import font_manager, rc
 import numpy as np
+
+from tkinter import *
 
 font_path = "C:/Windows/Fonts/NGULIM.TTF"
 font = font_manager.FontProperties(fname=font_path).get_name()
@@ -15,92 +16,189 @@ rc('font', family=font)
 year = []
 principal = []
 balance = []
+profit = []
+rate = []
+kr_stock = []
+us_stock = []
+kr_div = []
+us_div = []
+total_div = []
+USD_RP = []
+USD = []
+KRW = []
+after_tax_balance = []
+after_tax_profit = []
+fees = []
 
 
 
-
-# for line in accountInfo('3333.csv', -12054):
-#     year.insert(0, line['날짜'])
-#     principal.insert(0, line['투자원금'])
-#     balance.insert(0, line['평가잔고'])
-#     # print(line['수익금액'])
-#     # print(line['수익률'])
-
-
-
-# profit = balance - principal
-# print(profit)
-# # ypos = np.array(len(year))
-# plt.title('월말 잔고 기록')
-
-# 회색 분홍 초록
-# 스택으로 
-
-# plt.bar(year, principal)
-# plt.bar(year, profit, bottom=principal)
-
-# plt.bar(year, balance, label='평가금액', color='C1', alpha=0.8, width=0.6)
-# plt.bar(year, principal, label='투자원금', color='C0', alpha=0.8)
-
-year = np.array([1,2,3,4,5,6,7,8,9,10])
-principal = np.array([10,25,20,30,25,50,70,100,90,130])
-balance =  np.array([13,14,50,30,60,30,100,200,50,80])
-
-# plt.ylabel('잔고')
-
-# bal_bar = plt.bar(year, balance, color='C0')
-# prin_bar = plt.bar(year, principal, color='C0')
+for line in accountInfo('3333.csv', 382442):
+    year.insert(0, line['날짜'])
+    principal.insert(0, line['투자원금'])
+    balance.insert(0, line['평가잔고'])
+    profit.insert(0, line['수익금액'])
+    rate.insert(0, line['수익률'])
+    kr_stock.insert(0, line['한국주식잔고'])
+    us_stock.insert(0, line['미국주식잔고'])
+    kr_div.insert(0, line['한국배당금'])
+    us_div.insert(0, line['미국배당금'])
+    total_div.insert(0, line['전체배당금'])
+    KRW.insert(0, line['원화예수금'])
+    USD.insert(0, line['달러예수금'])
+    USD_RP.insert(0, line['달러RP'])
+    after_tax_balance.insert(0, line['세후평가금'])
+    after_tax_profit.insert(0, line['세후수익금'])
+    fees.insert(0, line['제비용'])
 
 
 
-# Change the style of plot
-# plt.style.use('seaborn-darkgrid')
+root = Tk()
+
+root.title("test")
+root.geometry('1600x900')
+
+
+
+fig = Figure(figsize=(20, 4), dpi=100)
+ax = fig.add_subplot()
+
+ax.set_ylabel('잔고 (단위: 억)')
+
+
+ax.set_title(f'월말 잔고 기록 (20{year[-1]} 기준) (세전)')
  
-# Make the same graph
-plt.fill_between(year, balance, color="C1", alpha=0.4)
-plt.fill_between(year, principal, color="C0", alpha=0.5)
-plt.plot(year, balance, color="C1", label='평가금액')
-plt.plot(year, principal, color="C0", label='투입원금')
+ax.fill_between(year, balance, color="C1", alpha=0.4)
+ax.fill_between(year, principal, color="C0", alpha=0.5)
+ax.plot(year, balance, color="C1", label='평가금액')
+ax.plot(year, principal, color="C0", label='투입원금')
 
-max_val = max(principal.max(), balance.max())
+
+max_val = max(max(principal), max(balance))
 max_range = (((max_val) // 10000000 + 1) * 2) * 10000000
 
-plt.yticks(np.arange(0,max_range, 10000000))
-
- 
-# Add titles
-plt.title("An area chart", loc="left")
-plt.xlabel("Value of X")
-plt.ylabel("Value of Y")
-
-plt.grid(True)
-plt.legend()
-
-# Show the graph
-plt.show()
+ax.set_xticklabels(year, rotation=45)
+# ax.set_xticklabels(year)
 
 
-# for i in range(len(year)):
-#     if principal[i] < balance[i]:
-#         bal_bar[i].set_color('C1')
-#         prin_bar[i].set_color('C0')
-#     if principal[i] > balance[i]:
-#         prin_bar[i].set_zorder(0)
-#         bal_bar[i].set_zorder(1)
-#         prin_bar[i].set_color('C0')
-#         bal_bar[i].set_color('C0')
-#         prin_bar[i].set_alpha(0.2)
+ax.set_yticks(np.arange(0,max_range, 10000000))
 
-# C0_patch = mpatches.Patch(color='C0', alpha=0.2, label='손실금')
-# C1_patch = mpatches.Patch(color='C1', label='수익금')
-# plt.legend(handles=[C0_patch, C1_patch])
-
-plt.show()
+ax.grid(color='C7')
+ax.legend()
 
 
+canvas = FigureCanvasTkAgg(fig, master=root)
+canvas.draw()
+canvas.get_tk_widget().grid(row=0, column=0, columnspan=4, sticky='nsew')
+
+
+Grid.rowconfigure(root, index=0, weight=1)
+Grid.columnconfigure(root, index=0, weight=1)
+Grid.columnconfigure(root, index=1, weight=1)
+Grid.columnconfigure(root, index=2, weight=1)
+Grid.columnconfigure(root, index=3, weight=1)
+
+
+lbl1 = Label(root, borderwidth=1, relief="solid", text='보유종목 및 섹터', anchor='n')
+lbl2 = Label(root, borderwidth=1, relief="solid")
+lbl3 = Label(root, borderwidth=1, relief="solid")
+lbl4 = Label(root, borderwidth=1, relief="solid")
+
+lbl1.grid(row=1, column=0, sticky='nsew')
+lbl2.grid(row=1, column=1, sticky='nsew')
+lbl3.grid(row=1, column=2, sticky='nsew')
+lbl4.grid(row=1, column=3, sticky='nsew')
 
 
 
+
+# 보유주식
+Label(lbl2, borderwidth=1, relief='solid', text='현재 보유 종목').grid(row=0, column=0, columnspan=10, sticky='nsew')
+Grid.columnconfigure(lbl2, index=0, weight=1)
+
+all_stocks = kr_stock[-1] + us_stock[-1]
+all_stocks.insert(0, ['종목', '수량', '평균단가','현재가','수익금','수익률'])
+
+for i in range(len(all_stocks)):
+    for j in range(len(all_stocks[0])):
+        stock_text = all_stocks[i][j]
+        if type(all_stocks[i][j]) == int or type(all_stocks[i][j]) == float:
+            stock_text = f'{all_stocks[i][j]:,}'
+        Label(lbl2, borderwidth=1, relief='solid', text=stock_text, anchor='w').grid(row=i+1, column=j, sticky='nsew')
+        Grid.columnconfigure(lbl2, index=i+1, weight=1)
+
+# 세전
+Grid.columnconfigure(lbl3, index=0, weight=1)
+Grid.columnconfigure(lbl3, index=1, weight=1)
+Label(lbl3, borderwidth=1, relief='solid', text='세전').grid(row=0, column=0, columnspan=10, sticky='nsew')
+
+Label(lbl3, borderwidth=1, relief='solid', text=f'원금', anchor='w').grid(row=1, column=0, sticky='nsew')
+Label(lbl3, borderwidth=1, relief='solid', text=f'{principal[-1]:,}원', anchor='w').grid(row=1, column=1, sticky='nsew')
+Label(lbl3, borderwidth=1, relief='solid', text=f'평가금', anchor='w').grid(row=2, column=0, sticky='nsew')
+Label(lbl3, borderwidth=1, relief='solid', text=f'{balance[-1]:,}원', anchor='w').grid(row=2, column=1, sticky='nsew')
+Label(lbl3, borderwidth=1, relief='solid', text=f'수익금', anchor='w').grid(row=3, column=0, sticky='nsew')
+Label(lbl3, borderwidth=1, relief='solid', text=f'{profit[-1]:,}원', anchor='w').grid(row=3, column=1, sticky='nsew')
+Label(lbl3, borderwidth=1, relief='solid', text=f'수익률', anchor='w').grid(row=4, column=0, sticky='nsew')
+Label(lbl3, borderwidth=1, relief='solid', text=f'{rate[-1]}%', anchor='w').grid(row=4, column=1, sticky='nsew')
+try:
+    one_year_div = total_div[-1][0] - total_div[-13][0]
+except IndexError:
+    one_year_div = total_div[-1][0]
+Label(lbl3, borderwidth=1, relief='solid', text=f'배당금 (최근 1년)', anchor='w').grid(row=5, column=0, sticky='nsew')
+Label(lbl3, borderwidth=1, relief='solid', text=f'{one_year_div:,}원', anchor='w').grid(row=5, column=1, sticky='nsew')
+Label(lbl3, borderwidth=1, relief='solid', text=f'원금 대비 배당율 (최근 1년)', anchor='w').grid(row=6, column=0, sticky='nsew')
+Label(lbl3, borderwidth=1, relief='solid', text=f'{round(one_year_div / principal[-1] * 100, 2):,}%', anchor='w').grid(row=6, column=1, sticky='nsew')
+Label(lbl3, borderwidth=1, relief='solid', text=f'평가금 대비 배당율 (최근 1년)', anchor='w').grid(row=7, column=0, sticky='nsew')
+Label(lbl3, borderwidth=1, relief='solid', text=f'{round(one_year_div / balance[-1] * 100, 2):,}%', anchor='w').grid(row=7, column=1, sticky='nsew')
+
+# 세후
+Grid.columnconfigure(lbl4, index=0, weight=1)
+Grid.columnconfigure(lbl4, index=1, weight=1)
+Label(lbl4, borderwidth=1, relief='solid', text='세후').grid(row=0, column=0, columnspan=10, sticky='nsew')
+
+Label(lbl4, borderwidth=1, relief='solid', text=f'원금', anchor='w').grid(row=1, column=0, sticky='nsew')
+Label(lbl4, borderwidth=1, relief='solid', text=f'{principal[-1]:,}원', anchor='w').grid(row=1, column=1, sticky='nsew')
+Label(lbl4, borderwidth=1, relief='solid', text=f'평가금', anchor='w').grid(row=2, column=0, sticky='nsew')
+Label(lbl4, borderwidth=1, relief='solid', text=f'{after_tax_balance[-1]:,}원', anchor='w').grid(row=2, column=1, sticky='nsew')
+Label(lbl4, borderwidth=1, relief='solid', text=f'수익금', anchor='w').grid(row=3, column=0, sticky='nsew')
+Label(lbl4, borderwidth=1, relief='solid', text=f'{after_tax_profit[-1]:,}원', anchor='w').grid(row=3, column=1, sticky='nsew')
+Label(lbl4, borderwidth=1, relief='solid', text=f'수익률', anchor='w').grid(row=4, column=0, sticky='nsew')
+Label(lbl4, borderwidth=1, relief='solid', text=f'{round(after_tax_profit[-1] / principal[-1] * 100, 2)}%', anchor='w').grid(row=4, column=1, sticky='nsew')
+try:
+    one_year_div = (total_div[-1][0] - total_div[-13][0]) - (total_div[-1][1] - total_div[-13][1])
+except IndexError:
+    one_year_div = total_div[-1][0] - total_div[-1][1]
+Label(lbl4, borderwidth=1, relief='solid', text=f'배당금 (최근 1년)', anchor='w').grid(row=5, column=0, sticky='nsew')
+Label(lbl4, borderwidth=1, relief='solid', text=f'{one_year_div:,}원', anchor='w').grid(row=5, column=1, sticky='nsew')
+Label(lbl4, borderwidth=1, relief='solid', text=f'원금 대비 배당율 (최근 1년)', anchor='w').grid(row=6, column=0, sticky='nsew')
+Label(lbl4, borderwidth=1, relief='solid', text=f'{round(one_year_div / principal[-1] * 100, 2):,}%', anchor='w').grid(row=6, column=1, sticky='nsew')
+Label(lbl4, borderwidth=1, relief='solid', text=f'평가금 대비 배당율 (최근 1년)', anchor='w').grid(row=7, column=0, sticky='nsew')
+Label(lbl4, borderwidth=1, relief='solid', text=f'{round(one_year_div / balance[-1] * 100, 2):,}%', anchor='w').grid(row=7, column=1, sticky='nsew')
+Label(lbl4, borderwidth=1, relief='solid', text=f'주식매도세', anchor='w').grid(row=8, column=0, sticky='nsew')
+Label(lbl4, borderwidth=1, relief='solid', text=f'{fees[-1]:,}원', anchor='w').grid(row=8, column=1, sticky='nsew')
+
+
+
+
+
+root.mainloop()
+
+
+
+
+
+
+# plt.show()
+
+
+# 과거 정보들은 콘솔창에 프린트 해주기
+
+# 자료들이 어떻게 계산되는지 표기하기
+
+
+# for line in accountInfo('1111.csv', -12054):
+#     for key in line.keys():
+#         print(f'{key} : {line[key]}')
+#     print('')
 
 # for line in accountInfo('2222.csv', +8806):
 #     for key in line.keys():
@@ -116,3 +214,33 @@ plt.show()
 
 
 # 불러온 계좌 체크박스 누른것들 합산해서 계산되게끔
+
+
+# 배당금 , 배당율, 수익률, , 그래프 추이 한번 그려주고, etf 보유종목 현황이나 비율 정도.
+# 보유주식 잔고, 평가잔고, 평단, 보유종목 top10 계좌 여러개 보여주고 수익률 등 합산 가능하게, 거래내역 두개 비교해서 전산누락도 확인, 평단과 주식수 체크
+# 예금과 수익률 비교, 기간, 파일이름을 계좌명으로 출력
+# 가장 최근 수수료율 확인시키기
+
+
+
+
+
+# HTS에서 일자별 잔고 비교로 에러 찾기
+
+   
+              
+
+
+
+# 외화 RP값은 있다면 수동입력받기
+
+
+# 남은원화, 남은외화, 해외주식 평단까지 계산해서 세후 실제 수익률 보여주기
+# 세전 세후
+
+
+# 각 운용사 etf csv 다운로드, 상위 증권사들 가져오면 대부분의 etf 가능할거같음
+# https://www.blackrock.com/au/individual/products/275304/fund/1478358644060.ajax?fileType=csv&fileName=IVV_holdings&dataType=fund
+# https://www.invesco.com/us/financial-products/etfs/holdings/main/holdings/0?audienceType=Investor&action=download&ticker=QQQM
+# https://www.schwabassetmanagement.com/sites/g/files/eyrktu361/files/product_files/SCHD/SCHD_FundHoldings_2021-11-26.CSV?1638005310=
+

@@ -1,8 +1,3 @@
-# 배당금 , 배당율, 수익률, 환율, 그래프 추이 한번 그려주고, etf 보유종목 현황이나 비율 정도.
-# 보유주식 잔고, 평가잔고, 평단, 보유종목 top10 계좌 여러개 보여주고 수익률 등 합산 가능하게, 거래내역 두개 비교해서 전산누락도 확인, 평단과 주식수 체크
-# 예금과 수익률 비교, 기간, 파일이름을 계좌명으로 출력
-# 가장 최근 수수료율 확인시키기
-
 from SHCal import SHCal
 from ConversionTools import ConversionTools
 
@@ -30,12 +25,7 @@ def accountInfo(csv, corr_val=0.0):
 
             tools = ConversionTools(start_date, end_date)
 
-            print(f'계산중 : {csv}계좌 -> {end_date[0]}년 {end_date[1]}월\n')
-            
-            usd_balance += shcal.USD()
-            usd_balance += shcal.USD_RP()
-            krw_balance += shcal.KRW()
-            krw_balance += shcal.gold()
+            print(f'계산중 : {csv}계좌 -> {end_date[0]}년 {end_date[1]}월')
         
             kr_stock_info = []
             us_stock_info = []
@@ -52,6 +42,7 @@ def accountInfo(csv, corr_val=0.0):
                 
                 krw_balance += quantity * price
 
+            us_profit = 0
             for key in shcal.stock_US().keys():
                 ticker = tools.usCodeToTicker(key)
                 price = round(tools.usTickerToPrice(ticker), 2)
@@ -64,10 +55,47 @@ def accountInfo(csv, corr_val=0.0):
                 us_stock_info.append([ticker, quantity, avg, price, profit, rate])
 
                 usd_balance += quantity * price
+
+                us_profit += (quantity * price) - (quantity * avg)
+
+
+            kr_tax = 0.23 * 0.01 # 매도세
+            kr_fee = 0.00363960 * 0.01 # 유관제비용
+            us_tax = 22 * 0.01 # 양도세
+            us_fee_1 = 0.05 * 0.01 # 매매 수수료
+            us_fee_2 = 0.0000051 # SEC 수수료
+
+            us_after_tax = 0
+            kr_after_tax = 0
             
-            total_balance = usd_balance * tools.USDToKRW() + krw_balance         
+            kr_after_tax += krw_balance
+            kr_after_tax -= krw_balance * (kr_tax + kr_fee)
+
+            us_total_fee = usd_balance * (us_fee_1 + us_fee_2)
+
+            us_after_tax += usd_balance 
+            us_after_tax -= us_total_fee
+
+
+            if us_profit >= 2500000 / tools.USDToKRW():
+                us_after_tax -= (us_profit - us_total_fee - (2500000 / tools.USDToKRW())) * us_tax
+
+            us_after_tax += shcal.USD()
+            us_after_tax += shcal.USD_RP()
+            kr_after_tax += shcal.KRW()
+            kr_after_tax += shcal.gold()
+
+            total_after_tax = us_after_tax * tools.USDToKRW() + kr_after_tax
+
+
+            usd_balance += shcal.USD()
+            usd_balance += shcal.USD_RP()
+            krw_balance += shcal.KRW()
+            krw_balance += shcal.gold()
+
+            total_balance = usd_balance * tools.USDToKRW() + krw_balance   
             
-            dict['날짜'] = f'{end_date[0]}년 {end_date[1]}월 {end_date[2]}일'
+            dict['날짜'] = f'{end_date[0] - 2000}년 {end_date[1]}월'
             dict['투자원금'] = shcal.principal()
             dict['평가잔고'] = int(total_balance)
             dict['수익금액'] = int(total_balance) - shcal.principal()
@@ -81,6 +109,7 @@ def accountInfo(csv, corr_val=0.0):
 
             dict['한국배당금'] = shcal.dividend_KR()
             dict['미국배당금'] = shcal.dividend_US()
+            dict['전체배당금'] = (round(shcal.dividend_US()[0] * tools.USDToKRW() + shcal.dividend_KR()[0]), round(shcal.dividend_US()[1] * tools.USDToKRW() + shcal.dividend_KR()[1]))
             dict['입금고액'] = shcal.deposit()
             dict['출금고액'] = shcal.withdraw()
             dict['원화예수금'] = round(shcal.KRW())
@@ -88,72 +117,12 @@ def accountInfo(csv, corr_val=0.0):
             dict['달러RP'] = shcal.USD_RP()
             dict['금'] = shcal.gold()
 
+            dict['세후평가금'] = int(total_after_tax)
+            dict['세후수익금'] = int(total_after_tax) - shcal.principal()
+            dict['제비용'] = int(total_balance) - int(total_after_tax)
+
             array.append(dict)
             i += 1
             
         except ValueError:
             return array
-
-
-
-
-
-# HTS에서 일자별 잔고 비교로 에러 찾기
-
-   
-                        
-
-
-
-
-
-
-
-
-
-
-
-# 외화 RP값은 있다면 수동입력받기
-
-
-# 남은원화, 남은외화, 해외주식 평단까지 계산해서 세후 실제 수익률 보여주기
-# 월 수익률 그래프
-
-
-# 미국주식은 코드랑 티커 매칭시켜줘야됨
-# 국내, 해외 주식 종가 데이터 hist
-# 환율 종가 데이터 hist
-
-#https://api.polygon.io/v2/reference/dividends/IVV?apiKey=AciB5tx_lEwCiVv5aP3b79zFCLoGGC20
-# https://api.stock.naver.com/chart/foreign/item/QQQM.O?periodType=monthCandle&stockExchangeType=NASDAQ
-
-
-
-# 국내주식
-# https://api.finance.naver.com/siseJson.naver?symbol=005930&requestType=1&startTime=20120922&endTime=20210420&timeframe=month
-
-
-# 네이버 환율 크롤링해야됨
-# https://finance.naver.com/marketindex/exchangeDailyQuote.naver?marketindexCd=FX_USDKRW_SHB&page=1
-
-# 종목 코드를 티커로, 크롤링
-# https://kr.investing.com/search/?q=US78467X1090&tab=quotes
-
-# 미국 배당 및 주가 데이터
-# https://api.nasdaq.com/api/quote/IVV/dividends?assetclass=etf
-# https://api.nasdaq.com/api/quote/IVV/chart?assetclass=etf&fromdate=2001-11-28&todate=2021-11-28
-
-# https://seekingalpha.com/api/v3/symbols/spy/dividend_history?&sort=-date
-# https://finance.api.seekingalpha.com/v2/chart?period=max&symbol=ivv
-
-# https://query1.finance.yahoo.com/v7/finance/download/IVV?period1=958780800&period2=1638230400&interval=1d&events=history&includeAdjustedClose=true
-# https://finance.yahoo.com/quote/IVV/history?period1=1606671434&period2=1638207434&interval=capitalGain%7Cdiv%7Csplit&filter=div&frequency=1d&includeAdjustedClose=true
-# https://api.polygon.io/v2/aggs/ticker/IVV/range/1/day/2020-06-01/2021-12-10?apiKey=AciB5tx_lEwCiVv5aP3b79zFCLoGGC20
-
-# 각 운용사 etf csv 다운로드, 상위 증권사들 가져오면 대부분의 etf 가능할거같음
-# https://www.blackrock.com/au/individual/products/275304/fund/1478358644060.ajax?fileType=csv&fileName=IVV_holdings&dataType=fund
-# https://www.invesco.com/us/financial-products/etfs/holdings/main/holdings/0?audienceType=Investor&action=download&ticker=QQQM
-# https://www.schwabassetmanagement.com/sites/g/files/eyrktu361/files/product_files/SCHD/SCHD_FundHoldings_2021-11-26.CSV?1638005310=
-
-
-
