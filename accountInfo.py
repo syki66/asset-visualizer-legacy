@@ -5,12 +5,14 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import calendar
 
+import pandas as pd
+import numpy as np
+
 def accountInfo(csv, corr_val=0.0):
-    array = []
+    df = pd.DataFrame()
     i = 0
     while True:
         try:
-            dict = {}
             usd_balance = 0
             krw_balance = 0
 
@@ -27,8 +29,8 @@ def accountInfo(csv, corr_val=0.0):
 
             print(f'계산중 : {csv}계좌 -> {end_date[0]}년 {end_date[1]}월')
         
-            kr_stock_info = []
-            us_stock_info = []
+            kr_stock_info = {}
+            us_stock_info = {}
             for key in shcal.stock_KR().keys():
                 price = tools.krCodeToPrice(key[1:])
                 stocks = shcal.stock_KR()[key]
@@ -38,7 +40,7 @@ def accountInfo(csv, corr_val=0.0):
                 profit = round((price * quantity) - sum(stocks))
                 rate = round(profit / sum(stocks) * 100, 2)
                 
-                kr_stock_info.append([name, quantity, avg, price, profit, rate])
+                kr_stock_info[name] = [quantity, avg, price, profit, rate]
                 
                 krw_balance += quantity * price
 
@@ -52,7 +54,7 @@ def accountInfo(csv, corr_val=0.0):
                 profit = round((price * quantity) - sum(stocks), 2)
                 rate = round(profit / sum(stocks) * 100, 2)
                 
-                us_stock_info.append([ticker, quantity, avg, price, profit, rate])
+                us_stock_info[ticker] = [quantity, avg, price, profit, rate]
 
                 usd_balance += quantity * price
 
@@ -95,34 +97,42 @@ def accountInfo(csv, corr_val=0.0):
 
             total_balance = usd_balance * tools.USDToKRW() + krw_balance   
             
-            dict['날짜'] = f'{end_date[0] - 2000}년 {end_date[1]}월'
-            dict['투자원금'] = shcal.principal()
-            dict['평가잔고'] = int(total_balance)
-            dict['수익금액'] = int(total_balance) - shcal.principal()
-            
-            dict['수익률'] = 0
-            if shcal.principal() != 0:
-                dict['수익률'] = round((int(total_balance) - shcal.principal()) / shcal.principal() * 100, 2)
+            try:
+                profit_rate = round((int(total_balance) - shcal.principal()) / shcal.principal() * 100, 2)
+            except:
+                profit_rate = 0
 
-            dict['한국주식잔고'] = kr_stock_info
-            dict['미국주식잔고'] = us_stock_info
+            col = {
+                '날짜': f'{end_date[0]}-{str(end_date[1]).zfill(2)}-{str(end_date[2]).zfill(2)}',
+                '투자원금': shcal.principal(),
+                '평가잔고': int(total_balance),
+                '수익금액': int(total_balance) - shcal.principal(),
+                '수익률' : profit_rate,
 
-            dict['한국배당금'] = shcal.dividend_KR()
-            dict['미국배당금'] = shcal.dividend_US()
-            dict['전체배당금'] = (round(shcal.dividend_US()[0] * tools.USDToKRW() + shcal.dividend_KR()[0]), round(shcal.dividend_US()[1] * tools.USDToKRW() + shcal.dividend_KR()[1]))
-            dict['입금고액'] = shcal.deposit()
-            dict['출금고액'] = shcal.withdraw()
-            dict['원화예수금'] = round(shcal.KRW())
-            dict['달러예수금'] = shcal.USD()
-            dict['달러RP'] = shcal.USD_RP()
-            dict['금'] = shcal.gold()
+                '한국주식잔고': kr_stock_info,
+                '미국주식잔고': us_stock_info,
 
-            dict['세후평가금'] = int(total_after_tax)
-            dict['세후수익금'] = int(total_after_tax) - shcal.principal()
-            dict['제비용'] = int(total_balance) - int(total_after_tax)
+                '한국배당금': shcal.dividend_KR()[0],
+                '한국배당세': shcal.dividend_KR()[1],
+                '미국배당금': shcal.dividend_US()[0],
+                '미국배당세': shcal.dividend_US()[1],
+                '전체배당금': round(shcal.dividend_US()[0] * tools.USDToKRW() + shcal.dividend_KR()[0]),
+                '전체배당세': round(shcal.dividend_US()[1] * tools.USDToKRW() + shcal.dividend_KR()[1]),
+                '입금고액': shcal.deposit(),
+                '출금고액': shcal.withdraw(),
+                '원화예수금': round(shcal.KRW()),
+                '달러예수금': shcal.USD(),
+                '달러RP': shcal.USD_RP(),
+                '금': shcal.gold(),
 
-            array.append(dict)
+                '세후평가금': int(total_after_tax),
+                '세후수익금': int(total_after_tax) - shcal.principal(),
+                '제비용': int(total_balance) - int(total_after_tax)
+            }
+
+            df = df.append(col, ignore_index=True)
             i += 1
             
         except ValueError:
-            return array
+            df = df.set_index('날짜')
+            return df

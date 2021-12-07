@@ -1,3 +1,9 @@
+Version 0.1.8 (2021-12-07)
+
+- accountInfo 함수 리턴값을 Dataframe으로 하도록 변경
+
+---
+
 Version 0.1.7 (2021-12-06)
 
 - plt 그래프를 tkinter에 추가
