@@ -4,7 +4,7 @@ import requests
 import time
 from bs4 import BeautifulSoup
 
-class ConversionTools:
+class Converter:
     def __init__(self, start_date, end_date):
         self.start_year, self.start_month, self.start_day = start_date
         self.end_year, self.end_month, self.end_day = end_date

@@ -1,5 +1,5 @@
 from SHCal import SHCal
-from ConversionTools import ConversionTools
+from Converter import Converter
 
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
@@ -23,7 +23,7 @@ def accountInfo(csv, corr_val=0.0):
             start_date = shcal.dateRange()[0]
             end_date = (year, month, last_day)
 
-            tools = ConversionTools(start_date, end_date)
+            tools = Converter(start_date, end_date)
 
             print(f'계산중 : {csv}계좌 -> {end_date[0]}년 {end_date[1]}월')
         
