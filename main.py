@@ -1,5 +1,6 @@
+import csv
 import pandas as pd
-from accountInfo import accountInfo
+from accountInfo import singleAccountInfo, mergeAccountInfo
 
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
@@ -9,6 +10,10 @@ import numpy as np
 import json
 import ast
 from tkinter import *
+from tkinter import filedialog
+
+import pickle
+
 
 font_path = "C:/Windows/Fonts/NGULIM.TTF"
 font = font_manager.FontProperties(fname=font_path).get_name()
@@ -33,7 +38,7 @@ rc('font', family=font)
 # fees = []
 
 
-# for line in accountInfo('1111.csv', -12054):
+# for line in singleAccountInfo('1111.csv', -12054):
 #     year.insert(0, line['날짜'])
 #     principal.insert(0, line['투자원금'])
 #     balance.insert(0, line['평가잔고'])
@@ -51,39 +56,103 @@ rc('font', family=font)
 #     after_tax_profit.insert(0, line['세후수익금'])
 #     fees.insert(0, line['제비용'])
 
+def getCSV():
+    root = Tk()
+    root.filename = filedialog.askopenfilenames(title='신한금융투자 거래내역 csv를 선택해주세요. (복수 선택 가능)', filetypes=(("csv files", "*.csv"), ("all files", "*.*")))
+    csv_list = root.filename
+    root.destroy()
+    return csv_list
 
 
-# df1 = accountInfo('1111.csv', -12054)
-# df2 = accountInfo('2222.csv', +8806)
-# df3 = accountInfo('3333.csv', +382442)
+def setName(csv_list):
+    input_list = []
+    
+    root = Tk()
+    root.geometry('1280x720')
+    Label(root, text='파일명').grid(row=0, column=0)
+    Label(root, text='계좌명').grid(row=0, column=1)
+    for i in range(len(csv_list)):
+        Label(root, text=csv_list[i]).grid(row=i+1, column=0)
+        input_list.append(Entry(root))
+        input_list[-1].grid(row=i+1, column=1)
+
+    names = []
+    def submit():
+        for i in input_list:
+            names.append(i.get())
+        root.destroy()
+    Button(root, text='완료', command=submit).grid(row=len(csv_list)+1, column=1)
+    
+    root.mainloop()
+    return ' + '.join(names)
+
+csv_list = getCSV()
+account_name = setName(csv_list)
+print(account_name)
+
+
+# f = open("test1.pkl", "rb")
+# df1 = pickle.load(f)
+# f.close()
+# f = open("test2.pkl", "rb")
+# df2 = pickle.load(f)
+# f.close()
+# f = open("test3.pkl", "rb")
+# df3 = pickle.load(f)
+# f.close()
+
+
+# 바이너리값 저장할지 안할지 선택하는 함수 추가
+
+# df_list = [singleAccountInfo('1111.csv', -12054), singleAccountInfo('2222.csv', +8806), singleAccountInfo('3333.csv', +382442)]
+# df_list = [df1,df2,df3]
+# test = mergeAccountInfo(df_list)
+
+# print(test.dtypes)
+
+
+
+# df1 = singleAccountInfo('1111.csv', -12054)
+# df2 = singleAccountInfo('2222.csv', +8806)
+# df3 = singleAccountInfo('3333.csv', +382442)
+
+
+
+# f = open("test1.pkl", "wb")
+# pickle.dump(df1, f)
+# f.close()
+# f = open("test2.pkl", "wb")
+# pickle.dump(df2, f)
+# f.close()
+# f = open("test3.pkl", "wb")
+# pickle.dump(df3, f)
+# f.close()
+
+# f = open("test1.pkl", "rb")
+# df1 = pickle.load(f)
+# f.close()
+# f = open("test2.pkl", "rb")
+# df2 = pickle.load(f)
+# f.close()
+# f = open("test3.pkl", "rb")
+# df3 = pickle.load(f)
+# f.close()
+
 
 # df1.to_csv('test1.csv', mode='w')
 # df2.to_csv('test2.csv', mode='w')
 # df3.to_csv('test3.csv', mode='w')
 
-df1 = pd.read_csv('test1.csv')
+# df1 = pd.read_csv('test1.csv')
 # df2 = pd.read_csv('test2.csv')
 # df3 = pd.read_csv('test3.csv')
 
-df1 = df1.set_index('날짜')
-# df2 = df2.set_index('날짜')
-# df3 = df3.set_index('날짜')
-
-
-print(ast.literal_eval(df1['한국주식잔고']['2021-12-31']))
 
 
 
 
 
-# df1 = df1.drop(columns=['한국주식잔고', '미국주식잔고'])
-# df2 = df2.drop(columns=['한국주식잔고', '미국주식잔고'])
-# df3 = df3.drop(columns=['한국주식잔고', '미국주식잔고'])
 
-
-# df_merge = df1.add(df2, fill_value=0)
-# df_merge = df_merge.add(df3, fill_value=0)
-# print(df_merge)
 
 # root = Tk()
 
@@ -228,17 +297,17 @@ print(ast.literal_eval(df1['한국주식잔고']['2021-12-31']))
 # 자료들이 어떻게 계산되는지 표기하기
 
 
-# for line in accountInfo('1111.csv', -12054):
+# for line in singleAccountInfo('1111.csv', -12054):
 #     for key in line.keys():
 #         print(f'{key} : {line[key]}')
 #     print('')
 
-# for line in accountInfo('2222.csv', +8806):
+# for line in singleAccountInfo('2222.csv', +8806):
 #     for key in line.keys():
 #         print(f'{key} : {line[key]}')
 #     print('')
 
-# for line in accountInfo('3333.csv', +382442):
+# for line in singleAccountInfo('3333.csv', +382442):
 #     for key in line.keys():
 #         print(f'{key} : {line[key]}')
 #     print('')

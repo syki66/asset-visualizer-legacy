@@ -4,11 +4,9 @@ from Converter import Converter
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import calendar
-
 import pandas as pd
-import numpy as np
 
-def accountInfo(csv, corr_val=0.0):
+def singleAccountInfo(csv, corr_val=0.0):
     df = pd.DataFrame()
     i = 0
     while True:
@@ -29,8 +27,8 @@ def accountInfo(csv, corr_val=0.0):
 
             print(f'계산중 : {csv}계좌 -> {end_date[0]}년 {end_date[1]}월')
         
-            kr_stock_info = {}
-            us_stock_info = {}
+            kr_stock_df = pd.DataFrame(columns=['종목', '수량', '평균단가', '현재가', '수익금'])
+            us_stock_df = pd.DataFrame(columns=['종목', '수량', '평균단가', '현재가', '수익금'])
             for key in shcal.stock_KR().keys():
                 price = tools.krCodeToPrice(key[1:])
                 stocks = shcal.stock_KR()[key]
@@ -40,7 +38,14 @@ def accountInfo(csv, corr_val=0.0):
                 profit = round((price * quantity) - sum(stocks))
                 rate = round(profit / sum(stocks) * 100, 2)
                 
-                kr_stock_info[name] = [quantity, avg, price, profit, rate]
+                kr_stock_col = {
+                    '종목' : name,
+                    '수량' : quantity,
+                    '평균단가' : avg,
+                    '현재가' : price,
+                    '수익금' : profit
+                }
+                kr_stock_df = kr_stock_df.append(kr_stock_col, ignore_index=True)
                 
                 krw_balance += quantity * price
 
@@ -54,7 +59,14 @@ def accountInfo(csv, corr_val=0.0):
                 profit = round((price * quantity) - sum(stocks), 2)
                 rate = round(profit / sum(stocks) * 100, 2)
                 
-                us_stock_info[ticker] = [quantity, avg, price, profit, rate]
+                us_stock_col = {
+                    '종목' : ticker,
+                    '수량' : quantity,
+                    '평균단가' : avg,
+                    '현재가' : price,
+                    '수익금' : profit
+                }
+                us_stock_df = us_stock_df.append(us_stock_col, ignore_index=True)
 
                 usd_balance += quantity * price
 
@@ -96,21 +108,15 @@ def accountInfo(csv, corr_val=0.0):
             krw_balance += shcal.gold()
 
             total_balance = usd_balance * tools.USDToKRW() + krw_balance   
-            
-            try:
-                profit_rate = round((int(total_balance) - shcal.principal()) / shcal.principal() * 100, 2)
-            except:
-                profit_rate = 0
 
             col = {
                 '날짜': f'{end_date[0]}-{str(end_date[1]).zfill(2)}-{str(end_date[2]).zfill(2)}',
                 '투자원금': shcal.principal(),
                 '평가잔고': int(total_balance),
                 '수익금액': int(total_balance) - shcal.principal(),
-                '수익률' : profit_rate,
 
-                '한국주식잔고': kr_stock_info,
-                '미국주식잔고': us_stock_info,
+                '한국주식잔고': kr_stock_df.set_index('종목'),
+                '미국주식잔고': us_stock_df.set_index('종목'),
 
                 '한국배당금': shcal.dividend_KR()[0],
                 '한국배당세': shcal.dividend_KR()[1],
@@ -136,3 +142,47 @@ def accountInfo(csv, corr_val=0.0):
         except ValueError:
             df = df.set_index('날짜')
             return df
+
+def mergeAccountInfo(df_list):
+    pd.set_option('mode.chained_assignment',  None) # SettingWithCopyWarning 경고 끄기
+
+    df_merge = pd.DataFrame()
+    for df in df_list:
+        df_merge = df_merge.add(df, fill_value=0)
+
+    date_list = []
+    for df in df_list:
+        date_list += list(df.index)
+    date_list = list(set(date_list))
+    
+    for date in date_list:
+        kr_stock_merge = pd.DataFrame()
+        for df in df_list:
+            if date in df.index:
+                kr_stock_merge = kr_stock_merge.add(df['한국주식잔고'][date], fill_value=0)
+        df_merge['한국주식잔고'][date] = kr_stock_merge.astype('int')
+
+    for date in date_list:
+        us_stock_merge = pd.DataFrame()
+        for df in df_list:
+            if date in df.index:
+                us_stock_merge = us_stock_merge.add(df['미국주식잔고'][date], fill_value=0)
+        us_stock_merge['수량'] = us_stock_merge['수량'].astype('int')
+        df_merge['미국주식잔고'][date] = us_stock_merge
+
+    df_merge['금'] = df_merge['금'].astype('int')
+    df_merge['세후수익금'] = df_merge['세후수익금'].astype('int')
+    df_merge['세후평가금'] = df_merge['세후평가금'].astype('int')
+    df_merge['수익금액'] = df_merge['수익금액'].astype('int')
+    df_merge['원화예수금'] = df_merge['원화예수금'].astype('int')
+    df_merge['입금고액'] = df_merge['입금고액'].astype('int')
+    df_merge['전체배당금'] = df_merge['전체배당금'].astype('int')
+    df_merge['전체배당세'] = df_merge['전체배당세'].astype('int')
+    df_merge['제비용'] = df_merge['제비용'].astype('int')
+    df_merge['출금고액'] = df_merge['출금고액'].astype('int')
+    df_merge['투자원금'] = df_merge['투자원금'].astype('int')
+    df_merge['평가잔고'] = df_merge['평가잔고'].astype('int')
+    df_merge['한국배당금'] = df_merge['한국배당금'].astype('int')
+    df_merge['한국배당세'] = df_merge['한국배당세'].astype('int')
+
+    return df_merge
