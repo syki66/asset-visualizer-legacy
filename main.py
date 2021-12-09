@@ -11,7 +11,8 @@ import json
 import ast
 from tkinter import *
 from tkinter import filedialog
-
+from tkinter import ttk
+import math
 import pickle
 
 
@@ -20,41 +21,7 @@ font = font_manager.FontProperties(fname=font_path).get_name()
 rc('font', family=font)
 
 
-# year = []
-# principal = []
-# balance = []
-# profit = []
-# rate = []
-# kr_stock = []
-# us_stock = []
-# kr_div = []
-# us_div = []
-# total_div = []
-# USD_RP = []
-# USD = []
-# KRW = []
-# after_tax_balance = []
-# after_tax_profit = []
-# fees = []
 
-
-# for line in singleAccountInfo('1111.csv', -12054):
-#     year.insert(0, line['날짜'])
-#     principal.insert(0, line['투자원금'])
-#     balance.insert(0, line['평가잔고'])
-#     profit.insert(0, line['수익금액'])
-#     rate.insert(0, line['수익률'])
-#     kr_stock.insert(0, line['한국주식잔고'])
-#     us_stock.insert(0, line['미국주식잔고'])
-#     kr_div.insert(0, line['한국배당금'])
-#     us_div.insert(0, line['미국배당금'])
-#     total_div.insert(0, line['전체배당금'])
-#     KRW.insert(0, line['원화예수금'])
-#     USD.insert(0, line['달러예수금'])
-#     USD_RP.insert(0, line['달러RP'])
-#     after_tax_balance.insert(0, line['세후평가금'])
-#     after_tax_profit.insert(0, line['세후수익금'])
-#     fees.insert(0, line['제비용'])
 
 def getCSV():
     root = Tk()
@@ -62,7 +29,6 @@ def getCSV():
     csv_list = root.filename
     root.destroy()
     return csv_list
-
 
 def setName(csv_list):
     input_list = []
@@ -86,31 +52,53 @@ def setName(csv_list):
     root.mainloop()
     return ' + '.join(names)
 
-csv_list = getCSV()
-account_name = setName(csv_list)
-print(account_name)
+def saveObject(csv_list):
+    pass
 
 
-# f = open("test1.pkl", "rb")
-# df1 = pickle.load(f)
-# f.close()
-# f = open("test2.pkl", "rb")
-# df2 = pickle.load(f)
-# f.close()
-# f = open("test3.pkl", "rb")
-# df3 = pickle.load(f)
-# f.close()
+# csv_list = getCSV()
+# account_name = setName(csv_list)
+# print(account_name)
+
+
+
+
+f = open("test1.pkl", "rb")
+df1 = pickle.load(f)
+f.close()
+f = open("test2.pkl", "rb")
+df2 = pickle.load(f)
+f.close()
+f = open("test3.pkl", "rb")
+df3 = pickle.load(f)
+f.close()
+f = open("test4.pkl", "rb")
+df4 = pickle.load(f)
+f.close()
 
 
 # 바이너리값 저장할지 안할지 선택하는 함수 추가
 
-# df_list = [singleAccountInfo('1111.csv', -12054), singleAccountInfo('2222.csv', +8806), singleAccountInfo('3333.csv', +382442)]
-# df_list = [df1,df2,df3]
-# test = mergeAccountInfo(df_list)
+# df_list = [singleAccountInfo('1111.csv', -12054), singleAccountInfo('2222.csv', +8806), singleAccountInfo('3333.csv', +382442), singleAccountInfo('4444.csv', +34570)]
+df_list = [df1,df2,df3,df4]
+# df_list = [df1]
+df = mergeAccountInfo(df_list)
 
-# print(test.dtypes)
+# print(df.dtypes)
+# print(df)
 
-
+# f = open("test1.pkl", "wb")
+# pickle.dump(df_list[0], f)
+# f.close()
+# f = open("test2.pkl", "wb")
+# pickle.dump(df_list[1], f)
+# f.close()
+# f = open("test3.pkl", "wb")
+# pickle.dump(df_list[2], f)
+# f.close()
+# f = open("test4.pkl", "wb")
+# pickle.dump(df_list[3], f)
+# f.close()
 
 # df1 = singleAccountInfo('1111.csv', -12054)
 # df2 = singleAccountInfo('2222.csv', +8806)
@@ -118,25 +106,9 @@ print(account_name)
 
 
 
-# f = open("test1.pkl", "wb")
-# pickle.dump(df1, f)
-# f.close()
-# f = open("test2.pkl", "wb")
-# pickle.dump(df2, f)
-# f.close()
-# f = open("test3.pkl", "wb")
-# pickle.dump(df3, f)
-# f.close()
 
-# f = open("test1.pkl", "rb")
-# df1 = pickle.load(f)
-# f.close()
-# f = open("test2.pkl", "rb")
-# df2 = pickle.load(f)
-# f.close()
-# f = open("test3.pkl", "rb")
-# df3 = pickle.load(f)
-# f.close()
+
+
 
 
 # df1.to_csv('test1.csv', mode='w')
@@ -154,168 +126,163 @@ print(account_name)
 
 
 
-# root = Tk()
+root = Tk()
 
-# root.title("test")
-# root.geometry('1600x900')
-
-
-
-# fig = Figure(figsize=(20, 4), dpi=100)
-# ax = fig.add_subplot()
-
-# ax.set_ylabel('잔고 (단위: 억)')
+# root.title(f"{account_name} 계좌 정보 조회")
+root.geometry('1920x1080')
 
 
-# ax.set_title(f'월말 잔고 기록 (20{year[-1]} 기준) (세전)')
- 
-# ax.fill_between(year, balance, color="C1", alpha=0.4)
-# ax.fill_between(year, principal, color="C0", alpha=0.5)
-# ax.plot(year, balance, color="C1", label='평가금액')
-# ax.plot(year, principal, color="C0", label='투입원금')
+
+fig = Figure(figsize=(20, 4), dpi=100)
+ax = fig.add_subplot()
+
+ax.set_title(f'월말 잔고 기록 ({df.index[-1][:4]}년 {df.index[-1][5:7]}월 기준) (세전)')
+ax.fill_between(df.index, df['평가잔고'], color="C1", alpha=0.4)
+ax.fill_between(df.index, df['투자원금'], color="C0", alpha=0.5)
+ax.plot(df.index, df['평가잔고'], color="C1", label='평가금액')
+ax.plot(df.index, df['투자원금'], color="C0", label='투자원금')
+
+max_val = math.ceil(max(df['투자원금'].max(), df['평가잔고'].max()) // 10000000)
+max_range = max_val * 10000000
+
+x_label = df.index.str.replace('20', '')
+x_label = x_label.str.replace('-\d\d$', '월', regex=True)
+x_label = x_label.str.replace('-', '년')
+
+ax.set_xticklabels(x_label, rotation=45)
+
+# ax.set_yticks(np.arange(0, max_range, 10000000))
+
+ax.set_ylabel('잔고 (단위: 억)')
+ax.grid(color='C7')
+ax.legend()
 
 
-# max_val = max(max(principal), max(balance))
-# max_range = (((max_val) // 10000000 + 1) * 2) * 10000000
-
-# ax.set_xticklabels(year, rotation=45)
-# # ax.set_xticklabels(year)
-
-
-# ax.set_yticks(np.arange(0,max_range, 10000000))
-
-# ax.grid(color='C7')
-# ax.legend()
-
-
-# canvas = FigureCanvasTkAgg(fig, master=root)
-# canvas.draw()
-# canvas.get_tk_widget().grid(row=0, column=0, columnspan=4, sticky='nsew')
-
-
-# Grid.rowconfigure(root, index=0, weight=1)
-# Grid.columnconfigure(root, index=0, weight=1)
-# Grid.columnconfigure(root, index=1, weight=1)
-# Grid.columnconfigure(root, index=2, weight=1)
-# Grid.columnconfigure(root, index=3, weight=1)
-
-
-# lbl1 = Label(root, borderwidth=1, relief="solid", text='보유종목 및 섹터', anchor='n')
-# lbl2 = Label(root, borderwidth=1, relief="solid")
-# lbl3 = Label(root, borderwidth=1, relief="solid")
-# lbl4 = Label(root, borderwidth=1, relief="solid")
-
-# lbl1.grid(row=1, column=0, sticky='nsew')
-# lbl2.grid(row=1, column=1, sticky='nsew')
-# lbl3.grid(row=1, column=2, sticky='nsew')
-# lbl4.grid(row=1, column=3, sticky='nsew')
+canvas = FigureCanvasTkAgg(fig, master=root)
+canvas.draw()
+canvas.get_tk_widget().grid(row=0, column=0, columnspan=4, sticky='nsew')
 
 
 
 
-# # 보유주식
-# Label(lbl2, borderwidth=1, relief='solid', text='현재 보유 종목').grid(row=0, column=0, columnspan=10, sticky='nsew')
-# Grid.columnconfigure(lbl2, index=0, weight=1)
+Grid.rowconfigure(root, index=0, weight=1)
 
-# all_stocks = kr_stock[-1] + us_stock[-1]
-# all_stocks.insert(0, ['종목', '수량', '평균단가','현재가','수익금','수익률'])
-
-# for i in range(len(all_stocks)):
-#     for j in range(len(all_stocks[0])):
-#         stock_text = all_stocks[i][j]
-#         if type(all_stocks[i][j]) == int or type(all_stocks[i][j]) == float:
-#             stock_text = f'{all_stocks[i][j]:,}'
-#         Label(lbl2, borderwidth=1, relief='solid', text=stock_text, anchor='w').grid(row=i+1, column=j, sticky='nsew')
-#         Grid.columnconfigure(lbl2, index=i+1, weight=1)
-
-# # 세전
-# Grid.columnconfigure(lbl3, index=0, weight=1)
-# Grid.columnconfigure(lbl3, index=1, weight=1)
-# Label(lbl3, borderwidth=1, relief='solid', text='세전').grid(row=0, column=0, columnspan=10, sticky='nsew')
-
-# Label(lbl3, borderwidth=1, relief='solid', text=f'원금', anchor='w').grid(row=1, column=0, sticky='nsew')
-# Label(lbl3, borderwidth=1, relief='solid', text=f'{principal[-1]:,}원', anchor='w').grid(row=1, column=1, sticky='nsew')
-# Label(lbl3, borderwidth=1, relief='solid', text=f'평가금', anchor='w').grid(row=2, column=0, sticky='nsew')
-# Label(lbl3, borderwidth=1, relief='solid', text=f'{balance[-1]:,}원', anchor='w').grid(row=2, column=1, sticky='nsew')
-# Label(lbl3, borderwidth=1, relief='solid', text=f'수익금', anchor='w').grid(row=3, column=0, sticky='nsew')
-# Label(lbl3, borderwidth=1, relief='solid', text=f'{profit[-1]:,}원', anchor='w').grid(row=3, column=1, sticky='nsew')
-# Label(lbl3, borderwidth=1, relief='solid', text=f'수익률', anchor='w').grid(row=4, column=0, sticky='nsew')
-# Label(lbl3, borderwidth=1, relief='solid', text=f'{rate[-1]}%', anchor='w').grid(row=4, column=1, sticky='nsew')
-# try:
-#     one_year_div = total_div[-1][0] - total_div[-13][0]
-# except IndexError:
-#     one_year_div = total_div[-1][0]
-# Label(lbl3, borderwidth=1, relief='solid', text=f'배당금 (최근 1년)', anchor='w').grid(row=5, column=0, sticky='nsew')
-# Label(lbl3, borderwidth=1, relief='solid', text=f'{one_year_div:,}원', anchor='w').grid(row=5, column=1, sticky='nsew')
-# Label(lbl3, borderwidth=1, relief='solid', text=f'원금 대비 배당율 (최근 1년)', anchor='w').grid(row=6, column=0, sticky='nsew')
-# Label(lbl3, borderwidth=1, relief='solid', text=f'{round(one_year_div / principal[-1] * 100, 2):,}%', anchor='w').grid(row=6, column=1, sticky='nsew')
-# Label(lbl3, borderwidth=1, relief='solid', text=f'평가금 대비 배당율 (최근 1년)', anchor='w').grid(row=7, column=0, sticky='nsew')
-# Label(lbl3, borderwidth=1, relief='solid', text=f'{round(one_year_div / balance[-1] * 100, 2):,}%', anchor='w').grid(row=7, column=1, sticky='nsew')
-
-# # 세후
-# Grid.columnconfigure(lbl4, index=0, weight=1)
-# Grid.columnconfigure(lbl4, index=1, weight=1)
-# Label(lbl4, borderwidth=1, relief='solid', text='세후').grid(row=0, column=0, columnspan=10, sticky='nsew')
-
-# Label(lbl4, borderwidth=1, relief='solid', text=f'원금', anchor='w').grid(row=1, column=0, sticky='nsew')
-# Label(lbl4, borderwidth=1, relief='solid', text=f'{principal[-1]:,}원', anchor='w').grid(row=1, column=1, sticky='nsew')
-# Label(lbl4, borderwidth=1, relief='solid', text=f'평가금', anchor='w').grid(row=2, column=0, sticky='nsew')
-# Label(lbl4, borderwidth=1, relief='solid', text=f'{after_tax_balance[-1]:,}원', anchor='w').grid(row=2, column=1, sticky='nsew')
-# Label(lbl4, borderwidth=1, relief='solid', text=f'수익금', anchor='w').grid(row=3, column=0, sticky='nsew')
-# Label(lbl4, borderwidth=1, relief='solid', text=f'{after_tax_profit[-1]:,}원', anchor='w').grid(row=3, column=1, sticky='nsew')
-# Label(lbl4, borderwidth=1, relief='solid', text=f'수익률', anchor='w').grid(row=4, column=0, sticky='nsew')
-# Label(lbl4, borderwidth=1, relief='solid', text=f'{round(after_tax_profit[-1] / principal[-1] * 100, 2)}%', anchor='w').grid(row=4, column=1, sticky='nsew')
-# try:
-#     one_year_div = (total_div[-1][0] - total_div[-13][0]) - (total_div[-1][1] - total_div[-13][1])
-# except IndexError:
-#     one_year_div = total_div[-1][0] - total_div[-1][1]
-# Label(lbl4, borderwidth=1, relief='solid', text=f'배당금 (최근 1년)', anchor='w').grid(row=5, column=0, sticky='nsew')
-# Label(lbl4, borderwidth=1, relief='solid', text=f'{one_year_div:,}원', anchor='w').grid(row=5, column=1, sticky='nsew')
-# Label(lbl4, borderwidth=1, relief='solid', text=f'원금 대비 배당율 (최근 1년)', anchor='w').grid(row=6, column=0, sticky='nsew')
-# Label(lbl4, borderwidth=1, relief='solid', text=f'{round(one_year_div / principal[-1] * 100, 2):,}%', anchor='w').grid(row=6, column=1, sticky='nsew')
-# Label(lbl4, borderwidth=1, relief='solid', text=f'평가금 대비 배당율 (최근 1년)', anchor='w').grid(row=7, column=0, sticky='nsew')
-# Label(lbl4, borderwidth=1, relief='solid', text=f'{round(one_year_div / balance[-1] * 100, 2):,}%', anchor='w').grid(row=7, column=1, sticky='nsew')
-# Label(lbl4, borderwidth=1, relief='solid', text=f'제비용', anchor='w').grid(row=8, column=0, sticky='nsew')
-# Label(lbl4, borderwidth=1, relief='solid', text=f'{fees[-1]:,}원', anchor='w').grid(row=8, column=1, sticky='nsew')
+Grid.columnconfigure(root, index=1, weight=1)
 
 
 
 
+def showStocks(date, column, weight):
+    lbl = Label(root, borderwidth=1, relief="solid")
+    lbl.grid(row=1, column=column, sticky='nsew')
+    
+    stocks = df['한국주식잔고'][date].add(df['미국주식잔고'][date], fill_value=0)
+    stocks['수익률'] = (stocks['현재가'] - stocks['평균단가']) / stocks['평균단가'] * 100
+    for col in stocks.columns:
+        stocks[col] = round(stocks[col], 2)
+    stocks['수량'] = stocks['수량'].astype('int')
 
-# root.mainloop()
+    len_us = len(df['미국주식잔고'][date].index)
+
+    Label(lbl, borderwidth=1, relief="solid", text='현재 보유 종목').grid(row=0, column=0, sticky='nsew', columnspan=6)
+    Label(lbl, borderwidth=1, relief="solid", text=stocks.index.name).grid(row=1, column=0, sticky='nsew')
+    for i, col in enumerate(stocks.columns):
+        Label(lbl, borderwidth=1, relief="solid", text=col).grid(row=1, column=1+i, sticky='nsew')
+
+    for i, row in enumerate(stocks.index):
+        if len_us + 2 <= 2 + i :
+            tp = int
+            currency = '원'
+        else:
+            tp = float
+            currency = '$'
+        Label(lbl, borderwidth=1, relief="solid", text=row).grid(row=2+i, column=0, sticky='nsew')
+        Label(lbl, borderwidth=1, relief="solid", text=f"{stocks['수량'][row]:,}").grid(row=2+i, column=1, sticky='nsew')
+        Label(lbl, borderwidth=1, relief="solid", text=f"{tp(stocks['평균단가'][row]):,}{currency}").grid(row=2+i, column=2, sticky='nsew')
+        Label(lbl, borderwidth=1, relief="solid", text=f"{tp(stocks['현재가'][row]):,}{currency}").grid(row=2+i, column=3, sticky='nsew')
+        Label(lbl, borderwidth=1, relief="solid", text=f"{tp(stocks['수익금'][row]):,}{currency}").grid(row=2+i, column=4, sticky='nsew')
+        Label(lbl, borderwidth=1, relief="solid", text=f"{stocks['수익률'][row]:,}%").grid(row=2+i, column=5, sticky='nsew')
+
+    Grid.columnconfigure(root, index=column, weight=weight)
+    for i in range(6):
+        Grid.columnconfigure(lbl, index=i, weight=weight)
+    
+def showBeforeTax(date, column, weight):
+    lbl = Label(root, borderwidth=1, relief="solid")
+    lbl.grid(row=1, column=column, sticky='nsew')
+    
+    df['세전수익률'] = round(df['수익금액'] / df['투자원금'] * 100, 2)
+
+    Label(lbl, borderwidth=1, relief="solid", text='세전').grid(row=0, column=0, sticky='nsew', columnspan=2)
+
+    Label(lbl, borderwidth=1, relief="solid", text='원금').grid(row=1, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text=f"{df['투자원금'][date]:,}원").grid(row=1, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text='평가금').grid(row=2, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text=f"{df['평가잔고'][date]:,}원").grid(row=2, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text='수익금').grid(row=3, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text=f"{df['수익금액'][date]:,}원").grid(row=3, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text='수익률').grid(row=4, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text=f"{df['세전수익률'][date]:,}%").grid(row=4, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text='배당금 (최근 1년)').grid(row=5, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text=f"{df['전체배당금'][date]:,}원").grid(row=5, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text='원금 대비 배당율 (최근 1년)').grid(row=6, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text=f"{round(df['전체배당금'][date] / df['투자원금'][date] * 100, 2):,}%").grid(row=6, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text='평가금 대비 배당율 (최근 1년)').grid(row=7, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text=f"{round(df['전체배당금'][date] / df['평가잔고'][date] * 100, 2):,}%").grid(row=7, column=1, sticky='nsew')
+
+    Grid.columnconfigure(root, index=column, weight=weight)
+    for i in range(2):
+        Grid.columnconfigure(lbl, index=i, weight=weight)
+
+def showAfterTax(date, column, weight):
+    lbl = Label(root, borderwidth=1, relief="solid")
+    lbl.grid(row=1, column=column, sticky='nsew')
+    
+    df['세후수익률'] = round(df['세후수익금'] / df['투자원금'] * 100, 2)
+    df['세후배당금'] = df['전체배당금'] - df['전체배당세']
+
+    Label(lbl, borderwidth=1, relief="solid", text='세후').grid(row=0, column=0, sticky='nsew', columnspan=2)
+
+    Label(lbl, borderwidth=1, relief="solid", text='원금').grid(row=1, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text=f"{df['투자원금'][date]:,}원").grid(row=1, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text='평가금').grid(row=2, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text=f"{df['세후평가금'][date]:,}원").grid(row=2, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text='수익금').grid(row=3, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text=f"{df['세후수익금'][date]:,}원").grid(row=3, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text='수익률').grid(row=4, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text=f"{df['세후수익률'][date]:,}%").grid(row=4, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text='배당금 (최근 1년)').grid(row=5, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text=f"{df['세후배당금'][date]:,}원").grid(row=5, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text='원금 대비 배당율 (최근 1년)').grid(row=6, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text=f"{round(df['세후배당금'][date] / df['투자원금'][date] * 100, 2):,}%").grid(row=6, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text='평가금 대비 배당율 (최근 1년)').grid(row=7, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text=f"{round(df['세후배당금'][date] / df['세후평가금'][date] * 100, 2):,}%").grid(row=7, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text='제비용').grid(row=8, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", text=f"{df['제비용'][date]:,}원").grid(row=8, column=1, sticky='nsew')
+
+    Grid.columnconfigure(root, index=column, weight=weight)
+    for i in range(2):
+        Grid.columnconfigure(lbl, index=i, weight=weight)
+
+
+showStocks(df.index[-1], 0, 1)
+showBeforeTax(df.index[-1], 1, 1)
+showAfterTax(df.index[-1], 2, 1)
 
 
 
 
 
 
-
-
-
-# 과거 정보들은 콘솔창에 프린트 해주기
-
-# 자료들이 어떻게 계산되는지 표기하기
-
-
-# for line in singleAccountInfo('1111.csv', -12054):
-#     for key in line.keys():
-#         print(f'{key} : {line[key]}')
-#     print('')
-
-# for line in singleAccountInfo('2222.csv', +8806):
-#     for key in line.keys():
-#         print(f'{key} : {line[key]}')
-#     print('')
-
-# for line in singleAccountInfo('3333.csv', +382442):
-#     for key in line.keys():
-#         print(f'{key} : {line[key]}')
-#     print('')
+root.mainloop()
 
 
 
 
-# 불러온 계좌 체크박스 누른것들 합산해서 계산되게끔
+
+
+# 버튼이나 실렉트박스 제작해서 정보 날짜별로 바꾸기
+
 
 
 # etf 보유종목 현황이나 비율 정도.
@@ -324,16 +291,10 @@ print(account_name)
 
 
 
-
-
-# HTS에서 일자별 잔고 비교로 에러 찾기
-
-   
               
 
 
 
-# 외화 RP값은 있다면 수동입력받기
 
 
 

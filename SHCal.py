@@ -174,7 +174,7 @@ class SHCal:
                     dict[line[2]] = []
                 for _ in range(line[3]):
                     dict[line[2]].append(line[16])
-            if line[1] == '장내매도':
+            if line[1] == '장내매도' or line[1] == '코스닥매도':
                 for _ in range(line[3]):
                     dict[line[2]].pop(0)
         trash = []

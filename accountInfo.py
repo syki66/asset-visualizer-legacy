@@ -185,4 +185,4 @@ def mergeAccountInfo(df_list):
     df_merge['한국배당금'] = df_merge['한국배당금'].astype('int')
     df_merge['한국배당세'] = df_merge['한국배당세'].astype('int')
 
-    return df_merge
+    return df_merge.sort_index(ascending=True)
