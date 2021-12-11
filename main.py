@@ -15,6 +15,8 @@ from tkinter import ttk
 import math
 import pickle
 
+from Converter import VTIQQQM_ratio
+
 
 font_path = "C:/Windows/Fonts/NGULIM.TTF"
 font = font_manager.FontProperties(fname=font_path).get_name()
@@ -298,19 +300,13 @@ drop.grid(row=2, column=1)
     # Button(lbl, text='이전', command=lambda:showInfo(-2)).pack(side='left')
     # Button(lbl, text='다음', command=lambda:showInfo(-2)).pack(side='right')
 
-# for i in df.index:
-#     print(i)
-#     print(df['한국주식잔고'][i])
-#     print(df['미국주식잔고'][i])
-#     print('\n\n\n\n')
 
-# print(df.index)
 
 init()
 # updateInfo()
 
 
-
+print(VTIQQQM_ratio(0.5,0.5))
 
 
 
@@ -328,27 +324,7 @@ root.mainloop()
 
 
 
-
-
-# 버튼이나 실렉트박스 제작해서 정보 날짜별로 바꾸기
-
-
-
 # etf 보유종목 현황이나 비율 정도.
 # 보유종목 top10 계좌 여러개 보여주고 수익률 등 합산 가능하게, 거래내역 두개 비교해서 전산누락도 확인, 평단과 주식수 체크 (매수날짜의 종가데이터와 스프레드 많이차이나는지, 전산에러만 확인)
 # 가장 최근 수수료율 확인시키기
-
-
-
-              
-
-
-
-
-
-
-# 각 운용사 etf csv 다운로드, 상위 증권사들 가져오면 대부분의 etf 가능할거같음
-# https://www.blackrock.com/au/individual/products/275304/fund/1478358644060.ajax?fileType=csv&fileName=IVV_holdings&dataType=fund
-# https://www.invesco.com/us/financial-products/etfs/holdings/main/holdings/0?audienceType=Investor&action=download&ticker=QQQM
-# https://www.schwabassetmanagement.com/sites/g/files/eyrktu361/files/product_files/SCHD/SCHD_FundHoldings_2021-11-26.CSV?1638005310=
 

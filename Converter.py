@@ -4,6 +4,10 @@ import requests
 import time
 from bs4 import BeautifulSoup
 
+import pandas as pd
+import csv
+import numpy as np
+
 class Converter:
     def __init__(self, start_date, end_date):
         self.start_year, self.start_month, self.start_day = start_date
@@ -71,3 +75,57 @@ class Converter:
                 if datetime(int(self.end_year), int(self.end_month), int(self.end_day)) >= datetime(year_get, month_get, day_get):
                     return float(rate[i].text.replace(',', ''))
             index += 1
+
+def VTIQQQM_ratio(VTI_weight, QQQM_weight):
+    VTI_url = 'https://www.ishares.com/us/products/239724/ishares-core-sp-total-us-stock-market-etf/1467271812596.ajax?fileType=csv&fileName=ITOT_holdings&dataType=fund'
+    res = requests.get(VTI_url)
+    raw = res.text
+    VTI_lines = raw.split('\xa0')[1].strip().splitlines()
+    VTI_array = np.array(list(csv.reader(VTI_lines, quotechar='"', delimiter=',', quoting=csv.QUOTE_ALL, skipinitialspace=True)))
+    VTI_df = pd.DataFrame(VTI_array)
+    VTI_df = pd.DataFrame(VTI_array[1:], columns=VTI_array[0], index=VTI_array[:,0][1:])
+    VTI_df = VTI_df[['Weight (%)', 'Name', 'Sector']].rename(columns={'Weight (%)': 'Weight'})
+    VTI_df['Weight'] = VTI_df['Weight'].astype('float')
+
+    QQQM_url = 'https://www.invesco.com/us/financial-products/etfs/holdings/main/holdings/0?audienceType=Investor&action=download&ticker=QQQM'
+    res = requests.get(QQQM_url)
+    raw = res.text
+    raw = raw.replace(' ,"', ',"')
+    QQQM_lines = raw.splitlines()
+    QQQM_array = np.array(list(csv.reader(QQQM_lines, quotechar='"', delimiter=',', quoting=csv.QUOTE_ALL, skipinitialspace=True)))
+    QQQM_df = pd.DataFrame(QQQM_array[1:], columns=QQQM_array[0], index=QQQM_array[:,2][1:])
+    QQQM_df = QQQM_df[['Weight', 'Name', 'Sector']]
+    QQQM_df['Weight'] = QQQM_df['Weight'].astype('float')
+
+    # 가중치 곱하기
+    VTI_df['new_weight'] = VTI_df['Weight'] * VTI_weight
+    QQQM_df['new_weight'] = QQQM_df['Weight'] * QQQM_weight
+
+    # 주식 비중
+    stock_df = pd.DataFrame(VTI_df['new_weight'].add(QQQM_df['new_weight'], fill_value=0))
+
+    # 구글 티커 합치기
+    if 'GOOG' in stock_df.index and 'GOOGL' in stock_df.index:
+        stock_df['new_weight']['GOOGL'] = stock_df['new_weight']['GOOG'] + stock_df['new_weight']['GOOGL']
+        stock_df = stock_df.drop(['GOOG'], axis=0)
+        
+    # 회사명 추가 (에러 때문에 보유비중 0.01% 이상만 남겨둠)
+    stock_df = stock_df[stock_df['new_weight'] >= 0.01]
+    stock_df['Name'] = QQQM_df['Name'].combine_first(VTI_df[VTI_df['new_weight'] >= 0.01]['Name'])
+    stock_df = stock_df.sort_values('new_weight', ascending=False)
+
+    # 섹터 비중
+    sector_df = pd.concat([VTI_df, QQQM_df]).groupby(['Sector']).sum()
+    sector_df = sector_df.drop(['Weight'], axis=1)
+
+    # 같은 섹터 이름 합치기
+    if 'Cash' in sector_df.index:
+        sector_df['new_weight']['Cash and/or Derivatives'] = sector_df['new_weight']['Cash'] + sector_df['new_weight']['Cash and/or Derivatives']
+        sector_df = sector_df.drop(['Cash'], axis=0)
+    if 'Communication' in sector_df.index:
+        sector_df['new_weight']['Communication Services'] = sector_df['new_weight']['Communication'] + sector_df['new_weight']['Communication Services']
+        sector_df = sector_df.drop(['Communication'], axis=0)
+
+    sector_df = sector_df.sort_values('new_weight', ascending=False)
+
+    return stock_df, sector_df
