@@ -14,14 +14,14 @@ from tkinter import filedialog
 from tkinter import ttk
 import math
 import pickle
+from tkinter.font import Font
 
 from Converter import VTIQQQM_ratio
 
 
-font_path = "C:/Windows/Fonts/NGULIM.TTF"
+font_path = "C:/WINDOWS/FONTS/MALGUNSL.TTF"
 font = font_manager.FontProperties(fname=font_path).get_name()
 rc('font', family=font)
-# 나눔글꼴로 변경하기
 
 
 
@@ -82,8 +82,8 @@ f.close()
 # 바이너리값 저장할지 안할지 선택하는 함수 추가
 
 # df_list = [singleAccountInfo('1111.csv', -12054), singleAccountInfo('2222.csv', +8806), singleAccountInfo('3333.csv', +382442), singleAccountInfo('4444.csv', +34570)]
-# df_list = [df1,df2,df3,df4]
-df_list = [df2]
+df_list = [df1,df2,df3,df4]
+# df_list = [df2]
 df = mergeAccountInfo(df_list)
 
 # print(df.dtypes)
@@ -133,6 +133,18 @@ root = Tk()
 # root.title(f"{account_name} 계좌 정보 조회")
 root.geometry('1920x1080')
 
+bigFont = Font(
+    family="맑은 고딕",
+    size=30,
+)
+
+midFont = Font(
+    family="맑은 고딕",
+    size=20,
+)
+
+fg = 'red'
+
 
 def showGraph():
     fig = Figure(figsize=(30, 30), dpi=150)
@@ -162,13 +174,11 @@ def showGraph():
 
     canvas = FigureCanvasTkAgg(fig, master=root)
     canvas.draw()
-    canvas.get_tk_widget().grid(row=0, column=0, columnspan=4, sticky='nsew')
-
-    Grid.rowconfigure(root, index=0, weight=1)
+    canvas.get_tk_widget().grid(row=0, column=0, columnspan=4)
 
 def showStocks(date, column, weight):
     lbl = Label(root, borderwidth=1, relief="solid", anchor='e')
-    lbl.grid(row=1, column=column, sticky='nsew')
+    lbl.grid(row=1, column=column)
 
     # 미국주식
     us_lbl = Label(lbl, borderwidth=1, relief="solid")
@@ -177,21 +187,21 @@ def showStocks(date, column, weight):
     us_stocks = df['미국주식잔고'][date]
     us_stocks['수익률'] = (us_stocks['현재가'] - us_stocks['평균단가']) / us_stocks['평균단가'] * 100
 
-    Label(us_lbl, borderwidth=1, relief="solid", text='미국 주식 잔고').grid(row=0, column=0, sticky='nsew', columnspan=6)
-    Label(us_lbl, borderwidth=1, relief="solid", text=us_stocks.index.name).grid(row=1, column=0, sticky='nsew')
+    Label(us_lbl, borderwidth=1, relief="solid", font=midFont, text='미국 주식 잔고').grid(row=0, column=0, sticky='nsew', columnspan=6)
+    Label(us_lbl, borderwidth=1, relief="solid", padx=15, text=us_stocks.index.name).grid(row=1, column=0, sticky='nsew')
     for i, col in enumerate(us_stocks.columns):
-        Label(us_lbl, borderwidth=1, relief="solid", text=col).grid(row=1, column=1+i, sticky='nsew')
+        Label(us_lbl, borderwidth=1, relief="solid", padx=15, text=col).grid(row=1, column=1+i, sticky='nsew')
 
     for i, row in enumerate(us_stocks.index):
-        Label(us_lbl, borderwidth=1, relief="solid", text=row).grid(row=2+i, column=0, sticky='nsew')
-        Label(us_lbl, borderwidth=1, relief="solid", text=f"{round(us_stocks['수량'][row]):,}").grid(row=2+i, column=1, sticky='nsew')
-        Label(us_lbl, borderwidth=1, relief="solid", text=f"{round(us_stocks['평균단가'][row], 2):,} 달러", anchor='e').grid(row=2+i, column=2, sticky='nsew')
-        Label(us_lbl, borderwidth=1, relief="solid", text=f"{round(us_stocks['현재가'][row], 2):,} 달러", anchor='e').grid(row=2+i, column=3, sticky='nsew')
-        Label(us_lbl, borderwidth=1, relief="solid", text=f"{round(us_stocks['수익금'][row], 2):,} 달러", anchor='e').grid(row=2+i, column=4, sticky='nsew')
-        Label(us_lbl, borderwidth=1, relief="solid", text=f"{round(us_stocks['수익률'][row], 2):,} %", anchor='e').grid(row=2+i, column=5, sticky='nsew')
+        Label(us_lbl, borderwidth=1, relief="solid", padx=15, text=row).grid(row=2+i, column=0, sticky='nsew')
+        Label(us_lbl, borderwidth=1, relief="solid", padx=15, text=f"{round(us_stocks['수량'][row]):,}").grid(row=2+i, column=1, sticky='nsew')
+        Label(us_lbl, borderwidth=1, relief="solid", padx=15, text=f"{round(us_stocks['평균단가'][row], 2):,} 달러", anchor='e').grid(row=2+i, column=2, sticky='nsew')
+        Label(us_lbl, borderwidth=1, relief="solid", padx=15, text=f"{round(us_stocks['현재가'][row], 2):,} 달러", anchor='e').grid(row=2+i, column=3, sticky='nsew')
+        Label(us_lbl, borderwidth=1, relief="solid", padx=15, text=f"{round(us_stocks['수익금'][row], 2):,} 달러", anchor='e').grid(row=2+i, column=4, sticky='nsew')
+        Label(us_lbl, borderwidth=1, relief="solid", padx=15, text=f"{round(us_stocks['수익률'][row], 2):,} %", anchor='e').grid(row=2+i, column=5, sticky='nsew')
 
     # 여백
-    span_lbl = Label(lbl, borderwidth=1, relief="solid")
+    span_lbl = Label(lbl, text=' ', font=midFont)
     span_lbl.grid(row=2, column=column, sticky='nsew')
 
     # 한국주식
@@ -201,18 +211,18 @@ def showStocks(date, column, weight):
     kr_stocks = df['한국주식잔고'][date]
     kr_stocks['수익률'] = (kr_stocks['현재가'] - kr_stocks['평균단가']) / kr_stocks['평균단가'] * 100
 
-    Label(kr_lbl, borderwidth=1, relief="solid", text='한국 주식 잔고').grid(row=0, column=0, sticky='nsew', columnspan=6)
-    Label(kr_lbl, borderwidth=1, relief="solid", text=kr_stocks.index.name).grid(row=1, column=0, sticky='nsew')
+    Label(kr_lbl, borderwidth=1, relief="solid", font=midFont, text='한국 주식 잔고').grid(row=0, column=0, sticky='nsew', columnspan=6)
+    Label(kr_lbl, borderwidth=1, relief="solid", padx=15, text=kr_stocks.index.name).grid(row=1, column=0, sticky='nsew')
     for i, col in enumerate(kr_stocks.columns):
-        Label(kr_lbl, borderwidth=1, relief="solid", text=col).grid(row=1, column=1+i, sticky='nsew')
+        Label(kr_lbl, borderwidth=1, relief="solid", padx=15, text=col).grid(row=1, column=1+i, sticky='nsew')
 
     for i, row in enumerate(kr_stocks.index):
-        Label(kr_lbl, borderwidth=1, relief="solid", text=row).grid(row=2+i, column=0, sticky='nsew')
-        Label(kr_lbl, borderwidth=1, relief="solid", text=f"{round(kr_stocks['수량'][row]):,}").grid(row=2+i, column=1, sticky='nsew')
-        Label(kr_lbl, borderwidth=1, relief="solid", text=f"{round(kr_stocks['평균단가'][row]):,} 원", anchor='e').grid(row=2+i, column=2, sticky='nsew')
-        Label(kr_lbl, borderwidth=1, relief="solid", text=f"{round(kr_stocks['현재가'][row]):,} 원", anchor='e').grid(row=2+i, column=3, sticky='nsew')
-        Label(kr_lbl, borderwidth=1, relief="solid", text=f"{round(kr_stocks['수익금'][row]):,} 원", anchor='e').grid(row=2+i, column=4, sticky='nsew')
-        Label(kr_lbl, borderwidth=1, relief="solid", text=f"{round(kr_stocks['수익률'][row], 2):,} %", anchor='e').grid(row=2+i, column=5, sticky='nsew')
+        Label(kr_lbl, borderwidth=1, relief="solid", padx=15, text=row).grid(row=2+i, column=0, sticky='nsew')
+        Label(kr_lbl, borderwidth=1, relief="solid", padx=15, text=f"{round(kr_stocks['수량'][row]):,}").grid(row=2+i, column=1, sticky='nsew')
+        Label(kr_lbl, borderwidth=1, relief="solid", padx=15, text=f"{round(kr_stocks['평균단가'][row]):,} 원", anchor='e').grid(row=2+i, column=2, sticky='nsew')
+        Label(kr_lbl, borderwidth=1, relief="solid", padx=15, text=f"{round(kr_stocks['현재가'][row]):,} 원", anchor='e').grid(row=2+i, column=3, sticky='nsew')
+        Label(kr_lbl, borderwidth=1, relief="solid", padx=15, text=f"{round(kr_stocks['수익금'][row]):,} 원", anchor='e').grid(row=2+i, column=4, sticky='nsew')
+        Label(kr_lbl, borderwidth=1, relief="solid", padx=15, text=f"{round(kr_stocks['수익률'][row], 2):,} %", anchor='e').grid(row=2+i, column=5, sticky='nsew')
 
     # 그리드 weight 설정
     Grid.columnconfigure(root, index=column, weight=weight)
@@ -223,20 +233,20 @@ def showStocks(date, column, weight):
     
 def showBeforeTax(date, column, weight):
     lbl = Label(root, borderwidth=1, relief="solid")
-    lbl.grid(row=1, column=column, sticky='nsew')
+    lbl.grid(row=1, column=column)
     
     df['세전수익률'] = round(df['수익금액'] / df['투자원금'] * 100, 2)
 
-    Label(lbl, borderwidth=1, relief="solid", text='세전').grid(row=0, column=0, sticky='nsew', columnspan=2)
+    Label(lbl, borderwidth=1, relief="solid", font=bigFont, text='세전').grid(row=0, column=0, sticky='nsew', columnspan=2)
 
-    Label(lbl, borderwidth=1, relief="solid", text='원금').grid(row=1, column=0, sticky='nsew')
-    Label(lbl, borderwidth=1, relief="solid", text=f"{df['투자원금'][date]:,} 원", anchor='e').grid(row=1, column=1, sticky='nsew')
-    Label(lbl, borderwidth=1, relief="solid", text='평가금').grid(row=2, column=0, sticky='nsew')
-    Label(lbl, borderwidth=1, relief="solid", text=f"{df['평가잔고'][date]:,} 원", anchor='e').grid(row=2, column=1, sticky='nsew')
-    Label(lbl, borderwidth=1, relief="solid", text='수익금').grid(row=3, column=0, sticky='nsew')
-    Label(lbl, borderwidth=1, relief="solid", text=f"{df['수익금액'][date]:,} 원", anchor='e').grid(row=3, column=1, sticky='nsew')
-    Label(lbl, borderwidth=1, relief="solid", text='수익률').grid(row=4, column=0, sticky='nsew')
-    Label(lbl, borderwidth=1, relief="solid", text=f"{df['세전수익률'][date]:,} %", anchor='e').grid(row=4, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", font=bigFont, fg=fg, padx=10, text='원금').grid(row=1, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", font=bigFont, fg=fg, padx=10, text=f"{df['투자원금'][date]:,}원", anchor='e').grid(row=1, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", font=bigFont, fg=fg, padx=10, text='평가금').grid(row=2, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", font=bigFont, fg=fg, padx=10, text=f"{df['평가잔고'][date]:,}원", anchor='e').grid(row=2, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", font=bigFont, fg=fg, padx=10, text='수익금').grid(row=3, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", font=bigFont, fg=fg, padx=10, text=f"{df['수익금액'][date]:,}원", anchor='e').grid(row=3, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", font=bigFont, fg=fg, padx=10, text='수익률').grid(row=4, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", font=bigFont, fg=fg, padx=10, text=f"{df['세전수익률'][date]:,}%", anchor='e').grid(row=4, column=1, sticky='nsew')
     Label(lbl, borderwidth=1, relief="solid", text='배당금 (최근 1년)').grid(row=5, column=0, sticky='nsew')
     Label(lbl, borderwidth=1, relief="solid", text=f"{df['전체배당금'][date]:,} 원", anchor='e').grid(row=5, column=1, sticky='nsew')
     Label(lbl, borderwidth=1, relief="solid", text='원금 대비 배당율 (최근 1년)').grid(row=6, column=0, sticky='nsew')
@@ -250,21 +260,21 @@ def showBeforeTax(date, column, weight):
 
 def showAfterTax(date, column, weight):
     lbl = Label(root, borderwidth=1, relief="solid")
-    lbl.grid(row=1, column=column, sticky='nsew')
+    lbl.grid(row=1, column=column)
     
     df['세후수익률'] = round(df['세후수익금'] / df['투자원금'] * 100, 2)
     df['세후배당금'] = df['전체배당금'] - df['전체배당세']
 
-    Label(lbl, borderwidth=1, relief="solid", text='세후').grid(row=0, column=0, sticky='nsew', columnspan=2)
+    Label(lbl, borderwidth=1, relief="solid", font=bigFont, text='세후').grid(row=0, column=0, sticky='nsew', columnspan=2)
 
-    Label(lbl, borderwidth=1, relief="solid", text='원금').grid(row=1, column=0, sticky='nsew')
-    Label(lbl, borderwidth=1, relief="solid", text=f"{df['투자원금'][date]:,} 원", anchor='e').grid(row=1, column=1, sticky='nsew')
-    Label(lbl, borderwidth=1, relief="solid", text='평가금').grid(row=2, column=0, sticky='nsew')
-    Label(lbl, borderwidth=1, relief="solid", text=f"{df['세후평가금'][date]:,} 원", anchor='e').grid(row=2, column=1, sticky='nsew')
-    Label(lbl, borderwidth=1, relief="solid", text='수익금').grid(row=3, column=0, sticky='nsew')
-    Label(lbl, borderwidth=1, relief="solid", text=f"{df['세후수익금'][date]:,} 원", anchor='e').grid(row=3, column=1, sticky='nsew')
-    Label(lbl, borderwidth=1, relief="solid", text='수익률').grid(row=4, column=0, sticky='nsew')
-    Label(lbl, borderwidth=1, relief="solid", text=f"{df['세후수익률'][date]:,} %", anchor='e').grid(row=4, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", font=bigFont, fg=fg, padx=10, text='원금').grid(row=1, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", font=bigFont, fg=fg, padx=10, text=f"{df['투자원금'][date]:,}원", anchor='e').grid(row=1, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", font=bigFont, fg=fg, padx=10, text='평가금').grid(row=2, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", font=bigFont, fg=fg, padx=10, text=f"{df['세후평가금'][date]:,}원", anchor='e').grid(row=2, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", font=bigFont, fg=fg, padx=10, text='수익금').grid(row=3, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", font=bigFont, fg=fg, padx=10, text=f"{df['세후수익금'][date]:,}원", anchor='e').grid(row=3, column=1, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", font=bigFont, fg=fg, padx=10, text='수익률').grid(row=4, column=0, sticky='nsew')
+    Label(lbl, borderwidth=1, relief="solid", font=bigFont, fg=fg, padx=10, text=f"{df['세후수익률'][date]:,}%", anchor='e').grid(row=4, column=1, sticky='nsew')
     Label(lbl, borderwidth=1, relief="solid", text='배당금 (최근 1년)').grid(row=5, column=0, sticky='nsew')
     Label(lbl, borderwidth=1, relief="solid", text=f"{df['세후배당금'][date]:,} 원", anchor='e').grid(row=5, column=1, sticky='nsew')
     Label(lbl, borderwidth=1, relief="solid", text='원금 대비 배당율 (최근 1년)').grid(row=6, column=0, sticky='nsew')
@@ -278,45 +288,70 @@ def showAfterTax(date, column, weight):
     for i in range(2):
         Grid.columnconfigure(lbl, index=i, weight=weight)
 
-def showInfo(event):
-    showStocks(clicked.get(), 0, 1)
-    showBeforeTax(clicked.get(), 1, 2)
-    showAfterTax(clicked.get(), 2, 2)
+def showPie(column, weight):
+    fig = Figure(figsize=(20, 20), dpi=25)
+    ax = fig.add_subplot()
+
+    ax.set_title('보유종목 TOP 10 [25%]')
+
+    other = 100 - 9.2+8.1+5.6+5.2+3.5+3.2+2.4+1.3+1.1+1.1
+
+    ratio = [9.2,8.1,5.6,5.2,3.5,3.2,2.4,1.3,1.1,1.1, other]
+    labels = ['[10%]AAPL','MSFT','GOOGL','AMZN','TSLA','NVDA','FB','ADBE','NFLX','AVGO', '나머지']
+    explode=[0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2]
+    wedgeprops={'width': 0.7, 'edgecolor': 'black', 'linewidth': 5}
+
+    ax.pie(ratio, labels=labels, textprops={'fontsize': 30}, counterclock=False, startangle=90, explode=explode, wedgeprops=wedgeprops)
+    ax.legend(prop={'size': 40})
+
+    canvas = FigureCanvasTkAgg(fig, master=root)
+    canvas.draw()
+    canvas.get_tk_widget().grid(row=1, column=column)
+
+    Grid.columnconfigure(root, index=column, weight=1)
+
+
+
+
+
+def showInfo(date):
+    showStocks(date, 0, 5)
+    showBeforeTax(date, 1, 5)
+    showAfterTax(date, 2, 5)
+    showPie(3, 1)
+
+def changeDate():
+    options = df.index
+    clicked = StringVar()
+    clicked.set(options[-1])
+
+    drop = OptionMenu(root, clicked, *options, command=showInfo)
+    drop.grid(row=2, column=1)
 
 def init():
+    Grid.rowconfigure(root, index=0, weight=1)
+    # Grid.rowconfigure(root, index=1, weight=1)
+    # Grid.rowconfigure(root, index=2, weight=1)
     showGraph()
     showInfo(df.index[-1])
-
-# def updateInfo():
-options = df.index
-clicked = StringVar()
-clicked.set(options[-1])
-
-drop = OptionMenu(root, clicked, *options, command=showInfo)
-drop.grid(row=2, column=1)
-
-    # lbl = Label(root)
-    # lbl.grid(row=2, column=1)
-    # Button(lbl, text='이전', command=lambda:showInfo(-2)).pack(side='left')
-    # Button(lbl, text='다음', command=lambda:showInfo(-2)).pack(side='right')
+    changeDate()
 
 
 
 init()
-# updateInfo()
 
 
-print(VTIQQQM_ratio(0.5,0.5))
+# print(VTIQQQM_ratio(0.5,0.5)[0].head(10))
 
 
 
 # 수익률 수익금 글씨크기 키우기 색 빨강
 
 
+# 종목 top 30~50정도 원화로 환전해서 보유종목 얼마 들어갔나 보여주기
+# top10 정도는 파이 그래프에 lengend에 퍼센트 표시해서 보여주기
 
-
-
-
+# 날짜바꿀때 기존 grid 삭제했다가 다시 보여주기
 
 
 root.mainloop()
