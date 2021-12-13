@@ -83,7 +83,7 @@ f.close()
 
 # df_list = [singleAccountInfo('1111.csv', -12054), singleAccountInfo('2222.csv', +8806), singleAccountInfo('3333.csv', +382442), singleAccountInfo('4444.csv', +34570)]
 df_list = [df1,df2,df3,df4]
-# df_list = [df2]
+# df_list = [df4]
 df = mergeAccountInfo(df_list)
 
 # print(df.dtypes)
@@ -130,8 +130,7 @@ df = mergeAccountInfo(df_list)
 
 root = Tk()
 
-# root.title(f"{account_name} 계좌 정보 조회")
-root.geometry('2560x1440')
+root.geometry('3000x1646')
 
 bigFont = Font(
     family="맑은 고딕",
@@ -150,26 +149,31 @@ def showGraph():
     fig = Figure(figsize=(30, 30), dpi=150)
     ax = fig.add_subplot()
 
-    ax.set_title(f'월말 잔고 기록 ({df.index[-1][:4]}년 {df.index[-1][5:7]}월 기준) (세전)')
+    ax.set_title(f'월말 잔고 기록 ({df.index[-1][:4]}년 {df.index[-1][5:7]}월 기준) (세전)', fontdict={'fontsize':20})
     ax.fill_between(df.index, df['평가잔고'], color="C1", alpha=0.4)
     ax.fill_between(df.index, df['투자원금'], color="C0", alpha=0.5)
     ax.plot(df.index, df['평가잔고'], color="C1", label='평가금액')
     ax.plot(df.index, df['투자원금'], color="C0", label='투자원금')
 
-    max_val = math.ceil(max(df['투자원금'].max(), df['평가잔고'].max()) // 10000000)
-    max_range = max_val * 10000000
+    max_val = max(df['투자원금'].max(), df['평가잔고'].max())
+    max_range = math.ceil(max_val * 1.2 / 10000000)
+    y_label = []
+    y_ticks = []
+    for i in range(max_range + 1):
+        y_label.append(f'{round(i * 0.1, 1)}억원')
+        y_ticks.append(i * 10000000)
 
     x_label = df.index.str.replace('20', '')
     x_label = x_label.str.replace('-\d\d$', '월', regex=True)
     x_label = x_label.str.replace('-', '년')
 
     ax.set_xticklabels(x_label, rotation=45)
-
-    # ax.set_yticks(np.arange(0, max_range, 10000000))
-
-    ax.set_ylabel('잔고 (단위: 억)')
+    
+    ax.set_yticks(y_ticks)
+    ax.set_yticklabels(y_label)
+    
     ax.grid(color='C7')
-    ax.legend()
+    ax.legend(prop={'size': 15}, loc='upper left')
 
     pos_1 = ax.get_position()
     pos_2 = [pos_1.x0 + -0.05, pos_1.y0 + 0,  pos_1.width / 0.9, pos_1.height / 1]
@@ -291,11 +295,11 @@ def showAfterTax(date, column, weight):
     for i in range(2):
         Grid.columnconfigure(lbl, index=i, weight=weight)
 
-def showSector(column):
+def showSector(column, vq_weight):
     fig = Figure(figsize=(25, 17), dpi=25)
     ax = fig.add_subplot()
 
-    labels, ratio = VTIQQQM_ratio(0.5,0.5)[1]
+    labels, ratio = VTIQQQM_ratio(*vq_weight)[1]
 
     ratio[labels.index('Cash and/or Derivatives')] += ratio.pop(labels.index('Investment Companies'))
     labels.pop(labels.index('Investment Companies'))
@@ -333,11 +337,13 @@ def showSector(column):
 
     Grid.columnconfigure(root, index=column, weight=1)
 
-def showHoldings(column):
+def showHoldings(column, vq_weight):
     fig = Figure(figsize=(25, 17), dpi=25)
     ax = fig.add_subplot()
 
-    labels, ratio = VTIQQQM_ratio(0.5,0.5)[0]
+    labels, ratio, name = VTIQQQM_ratio(*vq_weight)[0]
+    labels = labels[:10]
+    ratio = ratio[:10]
 
     top_sum = round(sum(map(float, ratio)), 2)
     ratio = [str(round(num, 1)).rjust(4,' ') for num in ratio]
@@ -365,51 +371,77 @@ def showHoldings(column):
 
     Grid.columnconfigure(root, index=column, weight=1)
 
+def showHoldingDetail(vq_weight, balance):
+    lbl = Label(root, borderwidth=1, relief="solid")
+    lbl.grid(row=0, column=5, rowspan=2)
+
+    stocks, weight, name = VTIQQQM_ratio(*vq_weight)[0]
+
+    Label(lbl, borderwidth=1, relief="solid", text='보유주식금액').grid(row=0, column=0, sticky='nsew', columnspan=3)
+    for i in range(0, 200):
+        Label(lbl, borderwidth=1, relief="solid", text=i+1).grid(row=1+i, column=0, sticky='nsew')
+        Label(lbl, borderwidth=1, relief="solid", text=name[i]).grid(row=1+i, column=1, sticky='nsew')
+        Label(lbl, borderwidth=1, relief="solid", text=f'{round(weight[i] * balance * 0.01):,} 원' ).grid(row=1+i, column=2, sticky='nsew')
+
+    
 
 
 def showInfo(date):
     showStocks(date, 0, 5)
     showBeforeTax(date, 1, 5)
     showAfterTax(date, 2, 5)
-    showSector(3)
-    showHoldings(4)
 
-def changeDate():
+
+def changeDateBtn():
     options = df.index
     clicked = StringVar()
     clicked.set(options[-1])
 
     drop = OptionMenu(root, clicked, *options, command=showInfo)
-    drop.grid(row=2, column=1)
+    drop.grid(row=2, column=2)
 
-def init():
-    Grid.rowconfigure(root, index=0, weight=1)
-    # Grid.rowconfigure(root, index=1, weight=1)
-    # Grid.rowconfigure(root, index=2, weight=1)
-    showGraph()
-    showInfo(df.index[-1])
-    changeDate()
+def winFullBtn():
+    lbl = Label(root)
+    lbl.grid(row=2, column=1)
+    Button(lbl, text='창모드', command=lambda: root.attributes('-fullscreen', False)).grid(row=0, column=0)
+    Button(lbl, text='풀스크린', command=lambda: root.attributes('-fullscreen', True)).grid(row=0, column=1)
 
 
+Grid.rowconfigure(root, index=0, weight=1)
+VTI_sum = 0
+QQQM_sum = 0
+if 'IVV' in df['미국주식잔고'][-1].index:
+    VTI_sum += df['미국주식잔고'][-1]['현재가']['IVV'] * df['미국주식잔고'][-1]['수량']['IVV']
+if 'VTI' in df['미국주식잔고'][-1].index:
+    VTI_sum += df['미국주식잔고'][-1]['현재가']['VTI'] * df['미국주식잔고'][-1]['수량']['VTI']
+if 'QQQM' in df['미국주식잔고'][-1].index:
+    QQQM_sum += df['미국주식잔고'][-1]['현재가']['QQQM'] * df['미국주식잔고'][-1]['수량']['QQQM']
 
-init()
+VTI_ratio = VTI_sum / (VTI_sum + QQQM_sum)
+QQQM_ratio = QQQM_sum / (VTI_sum + QQQM_sum)
+
+print(VTI_ratio, QQQM_ratio)
+
+showGraph()
+
+showSector(3,(VTI_ratio,QQQM_ratio))
+showHoldings(4,(VTI_ratio,QQQM_ratio))
+showHoldingDetail((VTI_ratio,QQQM_ratio), df['평가잔고'][-1])
+
+showInfo(df.index[-1])
+changeDateBtn()
+winFullBtn()
 
 
-# print(VTIQQQM_ratio(0.5,0.5)[0])
-# print(VTIQQQM_ratio(0.5,0.5)[1])
 
-
-# 종목 top 30~50정도 원화로 환전해서 보유종목 얼마 들어갔나 보여주기
 
 # 날짜바꿀때 기존 grid 삭제했다가 다시 보여주기
-
+# 계좌이름 적어주기
 
 root.mainloop()
 
 
 
-
-# etf 보유종목 현황이나 비율 정도.
-# 보유종목 top10 계좌 여러개 보여주고 수익률 등 합산 가능하게, 거래내역 두개 비교해서 전산누락도 확인, 평단과 주식수 체크 (매수날짜의 종가데이터와 스프레드 많이차이나는지, 전산에러만 확인)
+# 거래내역 두개 비교해서 전산누락도 확인, 평단과 주식수 체크 (매수날짜의 저가 고가 사이로 매수되었나, 전산에러만 확인)
 # 가장 최근 수수료율 확인시키기
 

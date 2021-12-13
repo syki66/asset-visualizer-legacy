@@ -128,4 +128,4 @@ def VTIQQQM_ratio(VTI_weight, QQQM_weight):
 
     sector_df = sector_df.sort_values('new_weight', ascending=False)
 
-    return (list(stock_df.index[:10]), list(stock_df['new_weight'][:10])), (list(sector_df.index), list(sector_df['new_weight']))
+    return (list(stock_df.index), list(stock_df['new_weight']), list(stock_df['Name'])), (list(sector_df.index), list(sector_df['new_weight']))
