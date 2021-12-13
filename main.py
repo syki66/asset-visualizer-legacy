@@ -131,7 +131,7 @@ df = mergeAccountInfo(df_list)
 root = Tk()
 
 # root.title(f"{account_name} 계좌 정보 조회")
-root.geometry('1920x1080')
+root.geometry('2560x1440')
 
 bigFont = Font(
     family="맑은 고딕",
@@ -171,10 +171,13 @@ def showGraph():
     ax.grid(color='C7')
     ax.legend()
 
+    pos_1 = ax.get_position()
+    pos_2 = [pos_1.x0 + -0.05, pos_1.y0 + 0,  pos_1.width / 0.9, pos_1.height / 1]
+    ax.set_position(pos_2)
 
     canvas = FigureCanvasTkAgg(fig, master=root)
     canvas.draw()
-    canvas.get_tk_widget().grid(row=0, column=0, columnspan=4)
+    canvas.get_tk_widget().grid(row=0, column=0, columnspan=5)
 
 def showStocks(date, column, weight):
     lbl = Label(root, borderwidth=1, relief="solid", anchor='e')
@@ -288,21 +291,73 @@ def showAfterTax(date, column, weight):
     for i in range(2):
         Grid.columnconfigure(lbl, index=i, weight=weight)
 
-def showPie(column, weight):
-    fig = Figure(figsize=(20, 20), dpi=25)
+def showSector(column):
+    fig = Figure(figsize=(25, 17), dpi=25)
     ax = fig.add_subplot()
 
-    ax.set_title('보유종목 TOP 10 [25%]')
+    labels, ratio = VTIQQQM_ratio(0.5,0.5)[1]
 
-    other = 100 - 9.2+8.1+5.6+5.2+3.5+3.2+2.4+1.3+1.1+1.1
+    ratio[labels.index('Cash and/or Derivatives')] += ratio.pop(labels.index('Investment Companies'))
+    labels.pop(labels.index('Investment Companies'))
 
-    ratio = [9.2,8.1,5.6,5.2,3.5,3.2,2.4,1.3,1.1,1.1, other]
-    labels = ['[10%]AAPL','MSFT','GOOGL','AMZN','TSLA','NVDA','FB','ADBE','NFLX','AVGO', '나머지']
-    explode=[0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2]
-    wedgeprops={'width': 0.7, 'edgecolor': 'black', 'linewidth': 5}
+    ratio = [str(round(num, 1)).rjust(4,' ') for num in ratio]
 
-    ax.pie(ratio, labels=labels, textprops={'fontsize': 30}, counterclock=False, startangle=90, explode=explode, wedgeprops=wedgeprops)
-    ax.legend(prop={'size': 40})
+    for i in range(len(labels)):
+        if labels[i] == 'Information Technology': labels[i] = f'{ratio[i]}% IT'
+        if labels[i] == 'Consumer Discretionary': labels[i] = f'{ratio[i]}% 임의소비재'
+        if labels[i] == 'Communication Services': labels[i] = f'{ratio[i]}% 통신'
+        if labels[i] == 'Health Care': labels[i] = f'{ratio[i]}% 헬스케어'
+        if labels[i] == 'Industrials': labels[i] = f'{ratio[i]}% 산업'
+        if labels[i] == 'Financials': labels[i] = f'{ratio[i]}% 금융'
+        if labels[i] == 'Consumer Staples': labels[i] = f'{ratio[i]}% 필수소비재'
+        if labels[i] == 'Real Estate': labels[i] = f'{ratio[i]}% 부동산'
+        if labels[i] == 'Utilities': labels[i] = f'{ratio[i]}% 유틸리티'
+        if labels[i] == 'Energy': labels[i] = f'{ratio[i]}% 에너지'
+        if labels[i] == 'Materials': labels[i] = f'{ratio[i]}% 원자재'
+        if labels[i] == 'Cash and/or Derivatives': labels[i] = f'{ratio[i]}% 기타'
+
+    ax.set_title('섹터 구성', fontdict={'fontsize':100})
+
+    wedgeprops={'width': 0.5, 'edgecolor': 'black', 'linewidth': 5}
+    colors = ['C0','C1','C2','C3','C4','C5','C6','C7','C8','C9','darkslategray','black']
+    ax.pie(ratio, counterclock=False, startangle=90, wedgeprops=wedgeprops, colors=colors)
+    ax.legend(labels, prop={'size': 58}, bbox_to_anchor=(1, 1.05))
+    
+    pos_1 = ax.get_position()
+    pos_2 = [pos_1.x0 + -0.3, pos_1.y0 + -0.2,  pos_1.width / 0.8, pos_1.height / 0.8]
+    ax.set_position(pos_2)
+
+    canvas = FigureCanvasTkAgg(fig, master=root)
+    canvas.draw()
+    canvas.get_tk_widget().grid(row=1, column=column)
+
+    Grid.columnconfigure(root, index=column, weight=1)
+
+def showHoldings(column):
+    fig = Figure(figsize=(25, 17), dpi=25)
+    ax = fig.add_subplot()
+
+    labels, ratio = VTIQQQM_ratio(0.5,0.5)[0]
+
+    top_sum = round(sum(map(float, ratio)), 2)
+    ratio = [str(round(num, 1)).rjust(4,' ') for num in ratio]
+    
+    labels.append('나머지')
+    ratio.append(round(100 - top_sum, 1))
+
+    for i in range(len(labels)):
+        labels[i] = f'{ratio[i]}% {labels[i]}'
+
+    ax.set_title(f'상위 10종목 : {top_sum}%', fontdict={'fontsize':100})
+
+    wedgeprops={'width': 0.5, 'edgecolor': 'black', 'linewidth': 5}
+    colors = ['C0','C1','C2','C3','C4','C5','C6','C7','C8','C9','darkslategray']
+    ax.pie(ratio, counterclock=False, startangle=90, wedgeprops=wedgeprops, colors=colors)
+    ax.legend(labels, prop={'size': 58}, bbox_to_anchor=(1, 1.05))
+    
+    pos_1 = ax.get_position()
+    pos_2 = [pos_1.x0 + -0.3, pos_1.y0 + -0.2,  pos_1.width / 0.8, pos_1.height / 0.8]
+    ax.set_position(pos_2)
 
     canvas = FigureCanvasTkAgg(fig, master=root)
     canvas.draw()
@@ -312,13 +367,12 @@ def showPie(column, weight):
 
 
 
-
-
 def showInfo(date):
     showStocks(date, 0, 5)
     showBeforeTax(date, 1, 5)
     showAfterTax(date, 2, 5)
-    showPie(3, 1)
+    showSector(3)
+    showHoldings(4)
 
 def changeDate():
     options = df.index
@@ -341,15 +395,11 @@ def init():
 init()
 
 
-# print(VTIQQQM_ratio(0.5,0.5)[0].head(10))
-
-
-
-# 수익률 수익금 글씨크기 키우기 색 빨강
+# print(VTIQQQM_ratio(0.5,0.5)[0])
+# print(VTIQQQM_ratio(0.5,0.5)[1])
 
 
 # 종목 top 30~50정도 원화로 환전해서 보유종목 얼마 들어갔나 보여주기
-# top10 정도는 파이 그래프에 lengend에 퍼센트 표시해서 보여주기
 
 # 날짜바꿀때 기존 grid 삭제했다가 다시 보여주기
 
