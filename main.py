@@ -1,23 +1,13 @@
-import csv
-import pandas as pd
-from accountInfo import singleAccountInfo, mergeAccountInfo
-
-import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 from matplotlib import font_manager, rc
-import numpy as np
-import json
-import ast
 from tkinter import *
 from tkinter import filedialog
-from tkinter import ttk
 import math
-import pickle
 from tkinter.font import Font
 
 from Converter import VTIQQQM_ratio
-
+from accountInfo import singleAccountInfo, mergeAccountInfo
 
 font_path = "C:/WINDOWS/FONTS/MALGUNSL.TTF"
 font = font_manager.FontProperties(fname=font_path).get_name()
@@ -39,90 +29,34 @@ def setName(csv_list):
     root.geometry('1280x720')
     Label(root, text='파일명').grid(row=0, column=0)
     Label(root, text='계좌명').grid(row=0, column=1)
+    Label(root, text='보정금액').grid(row=0, column=2)
     for i in range(len(csv_list)):
         Label(root, text=csv_list[i]).grid(row=i+1, column=0)
-        input_list.append(Entry(root))
-        input_list[-1].grid(row=i+1, column=1)
+        input_list.append((Entry(root), Entry(root)))
+        input_list[-1][0].grid(row=i+1, column=1)
+        input_list[-1][1].grid(row=i+1, column=2)
 
     names = []
+    values = []
     def submit():
-        for i in input_list:
-            names.append(i.get())
+        for tp in input_list:
+            name, value = tp
+            names.append(name.get())
+            values.append(value.get())
         root.destroy()
-    Button(root, text='완료', command=submit).grid(row=len(csv_list)+1, column=1)
+    Button(root, text='완료', command=submit).grid(row=len(csv_list)+1, column=2)
     
     root.mainloop()
-    return ' + '.join(names)
-
-def saveObject(csv_list):
-    pass
+    return ' + '.join(names), values
 
 
-# csv_list = getCSV()
-# account_name = setName(csv_list)
-# print(account_name)
+csv_list = getCSV()
+accountNames, values = setName(csv_list)
 
-
-
-
-f = open("test1.pkl", "rb")
-df1 = pickle.load(f)
-f.close()
-f = open("test2.pkl", "rb")
-df2 = pickle.load(f)
-f.close()
-f = open("test3.pkl", "rb")
-df3 = pickle.load(f)
-f.close()
-f = open("test4.pkl", "rb")
-df4 = pickle.load(f)
-f.close()
-
-
-# 바이너리값 저장할지 안할지 선택하는 함수 추가
-
-# df_list = [singleAccountInfo('1111.csv', -12054), singleAccountInfo('2222.csv', +8806), singleAccountInfo('3333.csv', +382442), singleAccountInfo('4444.csv', +34570)]
-# df_list = [df1,df2,df3,df4]
-df_list = [df2, df3]
+df_list = []
+for i in range(len(csv_list)):
+    df_list.append(singleAccountInfo(csv_list[i], int(values[i])))
 df = mergeAccountInfo(df_list)
-
-# print(df.dtypes)
-# print(df)
-
-# f = open("test1.pkl", "wb")
-# pickle.dump(df_list[0], f)
-# f.close()
-# f = open("test2.pkl", "wb")
-# pickle.dump(df_list[1], f)
-# f.close()
-# f = open("test3.pkl", "wb")
-# pickle.dump(df_list[2], f)
-# f.close()
-# f = open("test4.pkl", "wb")
-# pickle.dump(df_list[3], f)
-# f.close()
-
-# df1 = singleAccountInfo('1111.csv', -12054)
-# df2 = singleAccountInfo('2222.csv', +8806)
-# df3 = singleAccountInfo('3333.csv', +382442)
-
-
-
-
-
-
-
-
-# df1.to_csv('test1.csv', mode='w')
-# df2.to_csv('test2.csv', mode='w')
-# df3.to_csv('test3.csv', mode='w')
-
-# df1 = pd.read_csv('test1.csv')
-# df2 = pd.read_csv('test2.csv')
-# df3 = pd.read_csv('test3.csv')
-
-
-
 
 
 
@@ -152,7 +86,7 @@ def showGraph():
     fig = Figure(figsize=(30, 30), dpi=150)
     ax = fig.add_subplot()
 
-    ax.set_title(f'월말 잔고 기록 ({df.index[-1][:4]}년 {df.index[-1][5:7]}월 기준) (세전)', fontdict={'fontsize':20})
+    ax.set_title(f'{accountNames} 계좌, 월말 잔고 기록 ({df.index[-1][:4]}년 {df.index[-1][5:7]}월 기준) (세전)', fontdict={'fontsize':20})
     ax.fill_between(df.index, df['평가잔고'], color="C1", alpha=0.4)
     ax.fill_between(df.index, df['투자원금'], color="C0", alpha=0.5)
     ax.plot(df.index, df['평가잔고'], color="C1", label='평가금액')
@@ -449,11 +383,3 @@ winFullBtn()
 
 
 root.mainloop()
-
-
-# 타이틀에 계좌이름 적기
-
-
-# 거래내역 두개 비교해서 전산누락도 확인, 평단과 주식수 체크 (매수날짜의 저가 고가 사이로 매수되었나, 전산에러만 확인)
-# 가장 최근 수수료율 확인시키기
-
