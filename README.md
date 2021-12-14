@@ -49,7 +49,7 @@
 
 ## Build
 
-아래 코드 입력후 결과값을 `add-data`에 넣어주면됨
+아래 코드 입력후 경로에 들어가서 `matplotlibrc`를 복사해오면됨
 
 ```
 import matplotlib
@@ -57,5 +57,5 @@ matplotlib.matplotlib_fname().replace('\\', '/')
 ```
 
 ```
- pyinstaller --onefile --add-data 'C:\\Users\\syki66\\AppData\\Local\\Programs\\Python\\Python39\\lib\\site-packages\\matplotlib\\mpl-data\\matplotlibrc;.' main.py
+pyinstaller --onefile --add-data "matplotlibrc;." main.py
 ```
