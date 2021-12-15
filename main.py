@@ -8,6 +8,7 @@ from tkinter.font import Font
 
 from Converter import VTIQQQM_ratio
 from accountInfo import singleAccountInfo, mergeAccountInfo
+from mss import mss
 
 font_path = "C:/WINDOWS/FONTS/MALGUNSL.TTF"
 font = font_manager.FontProperties(fname=font_path).get_name()
@@ -64,7 +65,7 @@ df = mergeAccountInfo(df_list)
 
 root = Tk()
 
-root.geometry('3000x1646')
+root.geometry('3000x1618')
 
 bigFont = Font(
     family="맑은 고딕",
@@ -104,6 +105,7 @@ def showGraph():
     x_label = x_label.str.replace('-\d\d$', '월', regex=True)
     x_label = x_label.str.replace('-', '년')
 
+    ax.set_xticks(df.index)
     ax.set_xticklabels(x_label, rotation=45)
     
     ax.set_yticks(y_ticks)
@@ -319,7 +321,7 @@ def showHoldings(column, vq_weight):
 
 def showHoldingDetail(vq_weight, balance):
     lbl = Label(root, borderwidth=1, relief="solid")
-    lbl.grid(row=0, column=5, rowspan=2)
+    lbl.grid(row=0, column=5, rowspan=3)
 
     stocks, weight, name = VTIQQQM_ratio(*vq_weight)[0]
 
@@ -342,6 +344,20 @@ def showInfo(date):
     showBeforeTax(date, 1, 5)
     showAfterTax(date, 2, 5)
 
+def captureBtn():
+    def clickBtn(monitor):
+        filename = filedialog.asksaveasfilename(filetypes=[('png file','.png'),('All files', '*')], title='스크린샷 저장', initialfile=accountNames)
+        if not filename.lower().endswith('.png'):
+            filename = filename + '.png'
+        if filename:
+            sct.shot(mon=monitor, output=filename)
+    lbl = Label(root)
+    lbl.grid(row=2, column=0)
+    with mss() as sct:
+        for i in range(1, len(sct.monitors)):
+            height = sct.monitors[i]['height']
+            width = sct.monitors[i]['width']
+            Button(lbl, text=f'모니터{i} 캡쳐 [{width}x{height}]', command=lambda i=i: clickBtn(i)).grid(row=0, column=i-1)
 
 def changeDateBtn():
     options = df.index
@@ -377,6 +393,7 @@ showHoldings(4,(VTI_ratio,QQQM_ratio))
 showHoldingDetail((VTI_ratio,QQQM_ratio), df['평가잔고'][-1])
 
 showInfo(df.index[-1])
+captureBtn()
 changeDateBtn()
 winFullBtn()
 
