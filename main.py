@@ -87,7 +87,7 @@ def showGraph():
     fig = Figure(figsize=(30, 30), dpi=150)
     ax = fig.add_subplot()
 
-    ax.set_title(f'{accountNames} 계좌, 월말 잔고 기록 ({df.index[-1][:4]}년 {df.index[-1][5:7]}월 기준) (세전)', fontdict={'fontsize':20})
+    ax.set_title(f'[{accountNames} 계좌] 월말 잔고 기록 ({df.index[-1][:4]}년 {df.index[-1][5:7]}월 기준) (세전)', fontdict={'fontsize':20})
     ax.fill_between(df.index, df['평가잔고'], color="C1", alpha=0.4)
     ax.fill_between(df.index, df['투자원금'], color="C0", alpha=0.5)
     ax.plot(df.index, df['평가잔고'], color="C1", label='평가금액')
@@ -134,20 +134,30 @@ def showStocks(date, column, weight):
     us_lbl.grid(row=0, column=column, sticky='nsew')
 
     us_stocks = df['미국주식잔고'][date]
-    us_stocks['수익률'] = (us_stocks['현재가'] - us_stocks['평균단가']) / us_stocks['평균단가'] * 100
+    us_stocks['평균단가'] = us_stocks['매수금액'] / us_stocks['수량']
+    us_stocks['현재가'] = us_stocks['평가금액'] / us_stocks['수량']
+    us_stocks['수익금'] = us_stocks['평가금액'] - us_stocks['매수금액']
+    us_stocks['수익률'] = us_stocks['수익금'] / us_stocks['매수금액'] * 100
 
-    Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, font=midFont, text='미국 주식 잔고').grid(row=0, column=0, sticky='nsew', columnspan=6)
-    Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=us_stocks.index.name).grid(row=1, column=0, sticky='nsew')
-    for i, col in enumerate(us_stocks.columns):
-        Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=col).grid(row=1, column=1+i, sticky='nsew')
+    Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, font=midFont, text='미국 주식 잔고').grid(row=0, column=0, sticky='nsew', columnspan=8)
+    Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text='종목').grid(row=1, column=0, sticky='nsew')
+    Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text='수량').grid(row=1, column=1, sticky='nsew')
+    Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text='평균단가').grid(row=1, column=2, sticky='nsew')
+    Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text='현재가').grid(row=1, column=3, sticky='nsew')
+    Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text='매수금액').grid(row=1, column=4, sticky='nsew')
+    Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text='평가금액').grid(row=1, column=5, sticky='nsew')
+    Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text='수익금').grid(row=1, column=6, sticky='nsew')
+    Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text='수익률').grid(row=1, column=7, sticky='nsew')
 
     for i, row in enumerate(us_stocks.index):
         Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=row).grid(row=2+i, column=0, sticky='nsew')
         Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(us_stocks['수량'][row]):,}").grid(row=2+i, column=1, sticky='nsew')
-        Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(us_stocks['평균단가'][row], 2):,} 달러", anchor='e').grid(row=2+i, column=2, sticky='nsew')
-        Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(us_stocks['현재가'][row], 2):,} 달러", anchor='e').grid(row=2+i, column=3, sticky='nsew')
-        Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(us_stocks['수익금'][row], 2):,} 달러", anchor='e').grid(row=2+i, column=4, sticky='nsew')
-        Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(us_stocks['수익률'][row], 2):,} %", anchor='e').grid(row=2+i, column=5, sticky='nsew')
+        Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(us_stocks['평균단가'][row]):,} 달러", anchor='e').grid(row=2+i, column=2, sticky='nsew')
+        Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(us_stocks['현재가'][row]):,} 달러", anchor='e').grid(row=2+i, column=3, sticky='nsew')
+        Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(us_stocks['매수금액'][row]):,} 달러", anchor='e').grid(row=2+i, column=4, sticky='nsew')
+        Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(us_stocks['평가금액'][row]):,} 달러", anchor='e').grid(row=2+i, column=5, sticky='nsew')
+        Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(us_stocks['수익금'][row]):,} 달러", anchor='e').grid(row=2+i, column=6, sticky='nsew')
+        Label(us_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(us_stocks['수익률'][row], 2):,} %", anchor='e').grid(row=2+i, column=7, sticky='nsew')
 
     # 여백
     span_lbl = Label(lbl, text=' ', font=midFont, bg=lbg)
@@ -158,25 +168,35 @@ def showStocks(date, column, weight):
     kr_lbl.grid(row=3, column=column, sticky='nsew')
 
     kr_stocks = df['한국주식잔고'][date]
-    kr_stocks['수익률'] = (kr_stocks['현재가'] - kr_stocks['평균단가']) / kr_stocks['평균단가'] * 100
+    kr_stocks['평균단가'] = kr_stocks['매수금액'] / kr_stocks['수량']
+    kr_stocks['현재가'] = kr_stocks['평가금액'] / kr_stocks['수량']
+    kr_stocks['수익금'] = kr_stocks['평가금액'] - kr_stocks['매수금액']
+    kr_stocks['수익률'] = kr_stocks['수익금'] / kr_stocks['매수금액'] * 100
 
-    Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, font=midFont, text='한국 주식 잔고').grid(row=0, column=0, sticky='nsew', columnspan=6)
-    Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=kr_stocks.index.name).grid(row=1, column=0, sticky='nsew')
-    for i, col in enumerate(kr_stocks.columns):
-        Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=col).grid(row=1, column=1+i, sticky='nsew')
+    Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, font=midFont, text='한국 주식 잔고').grid(row=0, column=0, sticky='nsew', columnspan=8)
+    Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text='종목').grid(row=1, column=0, sticky='nsew')
+    Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text='수량').grid(row=1, column=1, sticky='nsew')
+    Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text='평균단가').grid(row=1, column=2, sticky='nsew')
+    Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text='현재가').grid(row=1, column=3, sticky='nsew')
+    Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text='매수금액').grid(row=1, column=4, sticky='nsew')
+    Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text='평가금액').grid(row=1, column=5, sticky='nsew')
+    Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text='수익금').grid(row=1, column=6, sticky='nsew')
+    Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text='수익률').grid(row=1, column=7, sticky='nsew')
 
     for i, row in enumerate(kr_stocks.index):
         Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=row).grid(row=2+i, column=0, sticky='nsew')
         Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(kr_stocks['수량'][row]):,}").grid(row=2+i, column=1, sticky='nsew')
         Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(kr_stocks['평균단가'][row]):,} 원", anchor='e').grid(row=2+i, column=2, sticky='nsew')
         Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(kr_stocks['현재가'][row]):,} 원", anchor='e').grid(row=2+i, column=3, sticky='nsew')
-        Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(kr_stocks['수익금'][row]):,} 원", anchor='e').grid(row=2+i, column=4, sticky='nsew')
-        Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(kr_stocks['수익률'][row], 2):,} %", anchor='e').grid(row=2+i, column=5, sticky='nsew')
+        Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(kr_stocks['매수금액'][row]):,} 원", anchor='e').grid(row=2+i, column=4, sticky='nsew')
+        Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(kr_stocks['평가금액'][row]):,} 원", anchor='e').grid(row=2+i, column=5, sticky='nsew')
+        Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(kr_stocks['수익금'][row]):,} 원", anchor='e').grid(row=2+i, column=6, sticky='nsew')
+        Label(kr_lbl, borderwidth=1, relief="solid", bg=lbg, padx=15, text=f"{round(kr_stocks['수익률'][row], 2):,} %", anchor='e').grid(row=2+i, column=7, sticky='nsew')
 
     # 그리드 weight 설정
     Grid.columnconfigure(root, index=column, weight=weight)
     Grid.columnconfigure(lbl, index=0, weight=1)
-    for i in range(6):
+    for i in range(7):
         Grid.columnconfigure(us_lbl, index=i, weight=1)
         Grid.columnconfigure(kr_lbl, index=i, weight=1)
     
@@ -377,11 +397,11 @@ def winFullBtn():
 VTI_sum = 0
 QQQM_sum = 0
 if 'IVV' in df['미국주식잔고'][-1].index:
-    VTI_sum += df['미국주식잔고'][-1]['현재가']['IVV'] * df['미국주식잔고'][-1]['수량']['IVV']
+    VTI_sum += df['미국주식잔고'][-1]['평가금액']['IVV']
 if 'VTI' in df['미국주식잔고'][-1].index:
-    VTI_sum += df['미국주식잔고'][-1]['현재가']['VTI'] * df['미국주식잔고'][-1]['수량']['VTI']
+    VTI_sum += df['미국주식잔고'][-1]['평가금액']['VTI']
 if 'QQQM' in df['미국주식잔고'][-1].index:
-    QQQM_sum += df['미국주식잔고'][-1]['현재가']['QQQM'] * df['미국주식잔고'][-1]['수량']['QQQM']
+    QQQM_sum += df['미국주식잔고'][-1]['평가금액']['QQQM']
 
 VTI_ratio = VTI_sum / (VTI_sum + QQQM_sum)
 QQQM_ratio = QQQM_sum / (VTI_sum + QQQM_sum)
@@ -398,5 +418,10 @@ changeDateBtn()
 winFullBtn()
 
 
+for col in df.columns:
+    if col == '한국주식잔고' or col == '미국주식잔고':
+        pass
+    else:
+        print(f'{col} : {df[col][-1]}')
 
 root.mainloop()

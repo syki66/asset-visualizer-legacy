@@ -27,23 +27,19 @@ def singleAccountInfo(csv, corr_val=0.0):
 
             print(f'계산중 : {csv}계좌 -> {end_date[0]}년 {end_date[1]}월')
         
-            kr_stock_df = pd.DataFrame(columns=['종목', '수량', '평균단가', '현재가', '수익금'])
-            us_stock_df = pd.DataFrame(columns=['종목', '수량', '평균단가', '현재가', '수익금'])
+            kr_stock_df = pd.DataFrame(columns=['종목', '수량', '매수금액', '평가금액'])
+            us_stock_df = pd.DataFrame(columns=['종목', '수량', '매수금액', '평가금액'])
             for key in shcal.stock_KR().keys():
                 price = tools.krCodeToPrice(key[1:])
                 stocks = shcal.stock_KR()[key]
                 name = tools.krCodeToName(key[1:])
                 quantity = len(stocks)
-                avg = round(sum(stocks) / quantity)
-                profit = round((price * quantity) - sum(stocks))
-                rate = round(profit / sum(stocks) * 100, 2)
                 
                 kr_stock_col = {
                     '종목' : name,
                     '수량' : quantity,
-                    '평균단가' : avg,
-                    '현재가' : price,
-                    '수익금' : profit
+                    '매수금액' : sum(stocks),
+                    '평가금액' : quantity * price
                 }
                 kr_stock_df = kr_stock_df.append(kr_stock_col, ignore_index=True)
                 
@@ -52,54 +48,56 @@ def singleAccountInfo(csv, corr_val=0.0):
             us_profit = 0
             for key in shcal.stock_US().keys():
                 ticker = tools.usCodeToTicker(key)
-                price = round(tools.usTickerToPrice(ticker), 2)
+                price = tools.usTickerToPrice(ticker)
                 stocks = shcal.stock_US()[key]
                 quantity = len(stocks)
-                avg = round(sum(stocks) / quantity, 2)
-                profit = round((price * quantity) - sum(stocks), 2)
-                rate = round(profit / sum(stocks) * 100, 2)
                 
                 us_stock_col = {
                     '종목' : ticker,
                     '수량' : quantity,
-                    '평균단가' : avg,
-                    '현재가' : price,
-                    '수익금' : profit
+                    '매수금액' : sum(stocks),
+                    '평가금액' : quantity * price
                 }
                 us_stock_df = us_stock_df.append(us_stock_col, ignore_index=True)
 
                 usd_balance += quantity * price
 
-                us_profit += (quantity * price) - (quantity * avg)
+                us_profit += (quantity * price) - sum(stocks)
 
 
             kr_tax = 0.23 * 0.01 # 매도세
             kr_fee = 0.00363960 * 0.01 # 유관제비용
-            us_tax = 22 * 0.01 # 양도세
-            us_fee_1 = 0.05 * 0.01 # 매매 수수료
-            us_fee_2 = 0.0000051 # SEC 수수료
 
-            us_after_tax = 0
             kr_after_tax = 0
-            
+
             kr_after_tax += krw_balance
             kr_after_tax -= krw_balance * (kr_tax + kr_fee)
 
+            kr_after_tax += shcal.KRW()
+            kr_after_tax += shcal.gold()
+
+
+            us_tax = 22 * 0.01 # 양도세
+            us_fee_1 = 0.05 * 0.01 # 매매 수수료
+            us_fee_2 = 0.0000051 # SEC 수수료
+            exchange_fee = 0.01 * 0.05 # 환전수수료
+
+            us_after_tax = 0
+            
             us_total_fee = usd_balance * (us_fee_1 + us_fee_2)
 
             us_after_tax += usd_balance 
             us_after_tax -= us_total_fee
-
 
             if us_profit >= 2500000 / tools.USDToKRW():
                 us_after_tax -= (us_profit - us_total_fee - (2500000 / tools.USDToKRW())) * us_tax
 
             us_after_tax += shcal.USD()
             us_after_tax += shcal.USD_RP()
-            kr_after_tax += shcal.KRW()
-            kr_after_tax += shcal.gold()
 
-            total_after_tax = us_after_tax * tools.USDToKRW() + kr_after_tax
+
+            total_after_tax = us_after_tax * tools.USDToKRW() * (1 - exchange_fee)  + kr_after_tax
+
 
 
             usd_balance += shcal.USD()
@@ -107,7 +105,7 @@ def singleAccountInfo(csv, corr_val=0.0):
             krw_balance += shcal.KRW()
             krw_balance += shcal.gold()
 
-            total_balance = usd_balance * tools.USDToKRW() + krw_balance   
+            total_balance = usd_balance * tools.USDToKRW() + krw_balance
 
             col = {
                 '날짜': f'{end_date[0]}-{str(end_date[1]).zfill(2)}-{str(end_date[2]).zfill(2)}',
