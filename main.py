@@ -267,8 +267,8 @@ def showSector(column, vq_weight):
 
     labels, ratio = VTIQQQM_ratio(*vq_weight)[1]
 
-    ratio[labels.index('Cash and/or Derivatives')] += ratio.pop(labels.index('Investment Companies'))
-    labels.pop(labels.index('Investment Companies'))
+    # ratio[labels.index('Cash and/or Derivatives')] += ratio.pop(labels.index('Investment Companies'))
+    # labels.pop(labels.index('Investment Companies'))
 
     ratio = [str(round(num, 1)).rjust(4,' ') for num in ratio]
 
