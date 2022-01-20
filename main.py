@@ -101,7 +101,7 @@ def showGraph():
         y_label.append(f'{round(i * 0.1, 1)}억원')
         y_ticks.append(i * 10000000)
 
-    x_label = df.index.str.replace('20', '')
+    x_label = df.index.str.replace('^20', '', regex=True)
     x_label = x_label.str.replace('-\d\d$', '월', regex=True)
     x_label = x_label.str.replace('-', '년')
 
