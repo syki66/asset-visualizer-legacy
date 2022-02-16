@@ -65,7 +65,7 @@ class SHCal:
 
     def deposit(self):
         '''입금고액'''
-        keyword = ['은행이체입금', '(펌뱅킹)입금', '계좌대체입금']
+        keyword = ['은행이체입금', '계좌대체입금', '(펌뱅킹)입금']
         deposit = 0
         exchange_rate = 1150
         for line in self.crop_list:
@@ -83,7 +83,7 @@ class SHCal:
     
     def withdraw(self):
         '''출금고액'''
-        keyword = ['은행이체출금', '(펌뱅킹)출금', '체크카드승인', '체크카드대체출금']
+        keyword = ['은행이체출금', '계좌대체출금', '(펌뱅킹)출금', '체크카드승인', '체크카드대체출금']
         withdraw = 0
         for line in self.crop_list:
             for kw in keyword:
@@ -91,9 +91,30 @@ class SHCal:
                     withdraw += line[4]
         return int(withdraw)
 
-    def principal(self):
+    def IPO_profit(self):
+        '''공모주 수익금'''
+        array = self.crop_list
+        profit = 0
+        for i in range(len(array)):
+            if array[i][1] == '공모주입고':
+                code, quantity, price = array[i][2], array[i][3], array[i][16]
+                count = 0
+                for line in array[i:]:
+                    if line[1] == '장내매도' and line[2] == code:
+                        count += line[3]
+                        if count > quantity:
+                            profit += (line[10] // line[3] - price) * (quantity - (count - line[3]))
+                            break
+                        else:
+                            profit += line[10] - (price * line[3])
+        return profit
+
+    def principal(self, IPO=False):
         '''투자원금'''
-        principal_result = self.deposit() - self.withdraw()
+        if IPO:
+            principal_result = self.deposit() - self.withdraw()
+        else:
+            principal_result = self.deposit() - self.withdraw() + self.IPO_profit()
         return principal_result
 
     def USD(self):
@@ -169,7 +190,7 @@ class SHCal:
         '''국내주식 잔고'''
         dict = {}
         for line in self.crop_list:
-            if line[1] == '계좌대체입고' or line[1] == '장내매수':
+            if line[1] == '계좌대체입고' or line[1] == '장내매수' or line[1] == '공모주입고':
                 if not line[2] in dict:
                     dict[line[2]] = []
                 for _ in range(line[3]):

@@ -6,7 +6,7 @@ from dateutil.relativedelta import relativedelta
 import calendar
 import pandas as pd
 
-def singleAccountInfo(csv, corr_val=0.0):
+def singleAccountInfo(csv, corr_val=0.0, IPO=False):
     df = pd.DataFrame()
     i = 0
     while True:
@@ -109,9 +109,9 @@ def singleAccountInfo(csv, corr_val=0.0):
 
             col = {
                 '날짜': f'{end_date[0]}-{str(end_date[1]).zfill(2)}-{str(end_date[2]).zfill(2)}',
-                '투자원금': shcal.principal(),
+                '투자원금': shcal.principal(IPO),
                 '평가잔고': int(total_balance),
-                '수익금액': int(total_balance) - shcal.principal(),
+                '수익금액': int(total_balance) - shcal.principal(IPO),
 
                 '한국주식잔고': kr_stock_df.set_index('종목'),
                 '미국주식잔고': us_stock_df.set_index('종목'),
@@ -130,7 +130,7 @@ def singleAccountInfo(csv, corr_val=0.0):
                 '금': shcal.gold(),
 
                 '세후평가금': int(total_after_tax),
-                '세후수익금': int(total_after_tax) - shcal.principal(),
+                '세후수익금': int(total_after_tax) - shcal.principal(IPO),
                 '제비용': int(total_balance) - int(total_after_tax)
             }
 

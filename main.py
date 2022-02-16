@@ -31,32 +31,36 @@ def setName(csv_list):
     Label(root, text='파일명').grid(row=0, column=0)
     Label(root, text='계좌명').grid(row=0, column=1)
     Label(root, text='보정금액').grid(row=0, column=2)
+    Label(root, text='공모주 수익 (포함: 1, 미포함: 0)').grid(row=0, column=3)
     for i in range(len(csv_list)):
         Label(root, text=csv_list[i]).grid(row=i+1, column=0)
-        input_list.append((Entry(root), Entry(root)))
+        input_list.append((Entry(root), Entry(root), Entry(root)))
         input_list[-1][0].grid(row=i+1, column=1)
         input_list[-1][1].grid(row=i+1, column=2)
+        input_list[-1][2].grid(row=i+1, column=3)
 
     names = []
     values = []
+    IPOs = []
     def submit():
         for tp in input_list:
-            name, value = tp
+            name, value, IPO = tp
             names.append(name.get())
             values.append(value.get())
+            IPOs.append(IPO.get())
         root.destroy()
     Button(root, text='완료', command=submit).grid(row=len(csv_list)+1, column=2)
     
     root.mainloop()
-    return ' + '.join(names), values
+    return ' + '.join(names), values, IPOs
 
 
 csv_list = getCSV()
-accountNames, values = setName(csv_list)
+accountNames, values, IPOs = setName(csv_list)
 
 df_list = []
 for i in range(len(csv_list)):
-    df_list.append(singleAccountInfo(csv_list[i], int(values[i])))
+    df_list.append(singleAccountInfo(csv_list[i], int(values[i]), int(IPOs[i])))
 df = mergeAccountInfo(df_list)
 
 
