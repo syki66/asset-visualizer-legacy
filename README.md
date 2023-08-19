@@ -57,6 +57,8 @@
 - 그래프 y축 가격 20단계로 고정하기
 - 로그 스케일 선택
 - 수익률 마이너스일 경우 세금 계산
+- Web 또는 모바일 앱 기반으로 변경
+- https://investor.vanguard.com/investment-products/etfs/profile/api/VTI/portfolio-holding/stock
 
 ---
 
