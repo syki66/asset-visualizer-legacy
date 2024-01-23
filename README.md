@@ -2,6 +2,8 @@
 
 신금투 종합거래내역을 입력받아서, 계좌 정보를 시각화 해주는 프로그램
 
+python으로 제작되었으며, pandas, numpy, matplotlib, BeautifulSoup 등의 라이브러리를 이용하여 제작함
+
 |실행 화면 (가상 정보)|
 |:---:|
 |![fake](https://user-images.githubusercontent.com/59393359/150634014-cf2d8a6a-9c57-4cf6-8b34-bdcb2c0b7785.png)|
