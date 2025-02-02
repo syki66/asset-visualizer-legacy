@@ -1,4 +1,8 @@
-# SHinvest_visualizer
+# asset-visualizer-legacy
+
+[새 버전 저장소 링크](https://github.com/syki66/asset-visualizer)
+
+# asset-visualizer
 
 신금투 종합거래내역을 입력받아서, 계좌 정보를 시각화 해주는 프로그램
 
@@ -60,7 +64,6 @@ python으로 제작되었으며, pandas, numpy, matplotlib, BeautifulSoup 등의
 - 로그 스케일 선택
 - 수익률 마이너스일 경우 세금 계산
 - Web 또는 모바일 앱 기반으로 변경
-- https://investor.vanguard.com/investment-products/etfs/profile/api/VTI/portfolio-holding/stock
 
 ---
 
